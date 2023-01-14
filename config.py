@@ -1,0 +1,16 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TELEGRAM = os.getenv('TELEGRAM')
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+CHANNEL_MEME = -1001486678205
+NX_MEME = -1001482614635
+NX_MAIN = -1001839268196
+NYX = 703453307
+LOG_GROUP = -1001739784948
+
+MSG_REMOVAL_PERIOD = 1200
