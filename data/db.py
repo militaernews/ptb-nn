@@ -13,13 +13,11 @@ logger = logging.getLogger(__name__)
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)
 
 
-def get_source(source_id: int) -> Optional[Source]:
+def get_source(channel_id: int) -> Optional[Source]:
     with conn.cursor() as c:
-        c.execute("select * from sources where source_id = %s;",
-                  [source_id])
+        c.execute("select * from sources where channel_id = %s;",
+                  [channel_id])
         res = c.fetchone()
         print(res)
-        if res is not None:
-            return res[0]
 
-        return None
+        return res

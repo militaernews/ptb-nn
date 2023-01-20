@@ -7,12 +7,18 @@ from data.db import get_source
 async def lookup(update: Update, context: CallbackContext):
     print(update.message.forward_from_chat)
 
+    await update.message.reply_text(f"Update:: \n\n{update.message}")
+
     source_id = update.message.forward_from_chat.id
 
     await update.message.reply_text(f"Quelle: {source_id} - {update.message.forward_from_chat.username}")
 
     if update.message.forward_from_chat.id is None:
         return await update.message.reply_text("fwd-chat-id is none")
+
+    if update.message.forward_from_chat.type != update.message.forward_from_chat.CHANNEL:
+        return await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
+
 
     result = get_source(source_id)
 

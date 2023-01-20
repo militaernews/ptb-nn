@@ -1,12 +1,12 @@
 import logging
 
 from telegram.constants import ParseMode
-from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler
+from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence
 
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from config import NX_MEME, TELEGRAM
 from group.command import donbas, maps, loss, peace, genozid
-from private.sources import  lookup
+from private.sources import lookup
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM).defaults(
         Defaults(parse_mode=ParseMode.HTML, disable_web_page_preview=True)) \
+        .persistence(PicklePersistence(filepath="persistence")) \
         .build()
-    # todo: add persistence
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 

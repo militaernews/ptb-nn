@@ -1,4 +1,5 @@
 from telegram import Update
+from telegram.error import TelegramError
 from telegram.ext import CallbackContext
 
 from config import MSG_REMOVAL_PERIOD, LOG_GROUP
@@ -9,10 +10,14 @@ async def delete(context: CallbackContext):
 
 
 async def reply_html(update: Update, context: CallbackContext, file_name: str):
-    await update.message.delete()
+    try:
+        await update.message.delete()
+    except TelegramError as e:
+        print("needs admin:", e)
+        pass
 
     try:
-        with open(f"res/de/{file_name}.html", "r", encoding='utf-8') as f:
+        with open(f"res/{file_name}.html", "r", encoding='utf-8') as f:
             text = f.read()
             if update.message.reply_to_message is not None:
                 msg = await update.message.reply_to_message.reply_text(text)
@@ -31,7 +36,11 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
 
 
 async def reply_photo(update: Update, context: CallbackContext, file_name: str):
-    await update.message.delete()
+    try:
+        await update.message.delete()
+    except  TelegramError as e:
+        print("needs admin:", e)
+        pass
 
     try:
         with open(f"res/img/{file_name}", "rb") as f:
