@@ -1,6 +1,5 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from telegram.helpers import mention_html
 
 from util.helper import reply_html
 

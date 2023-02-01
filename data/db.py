@@ -3,8 +3,6 @@ from typing import Optional
 
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
-from telegram import Message
-from telegram.ext import CallbackContext
 
 from config import DATABASE_URL
 from data.model import Source

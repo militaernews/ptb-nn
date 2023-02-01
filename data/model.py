@@ -11,6 +11,7 @@ class Post:
     reply_id: Optional[int]
     media_id: Optional[str]
 
+
 @dataclass
 class Source:
     channel_id: int

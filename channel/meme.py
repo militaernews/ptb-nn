@@ -1,8 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from config import NX_MAIN
-
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
     if update.channel_post.media_group_id is None:
@@ -35,7 +33,7 @@ async def add_footer_meme(update: Update, context: CallbackContext):
 
         # Unfortunately it is not possible for bots to forward a mediagroup as a whole.
 
-     #   await update.channel_post.forward(chat_id=NX_MAIN)
+    #   await update.channel_post.forward(chat_id=NX_MAIN)
     # await update.channel_post.forward(chat_id=-1001618190222)
     except Exception as e:
         print(f"Error when posting media: {e}")
@@ -51,8 +49,8 @@ async def post_text_meme_nx(update: Update, context: CallbackContext):
             format_meme_footer(update.channel_post.text_html_urled), disable_web_page_preview=False
         )
 
-     #   await update.channel_post.forward(chat_id=NX_MAIN)
-      #  await update.channel_post.forward(chat_id=-1001618190222)
+    #   await update.channel_post.forward(chat_id=NX_MAIN)
+    #  await update.channel_post.forward(chat_id=-1001618190222)
 
     except Exception as e:
         print(f"Error when posting text: {e}")

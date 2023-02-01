@@ -19,7 +19,6 @@ async def lookup(update: Update, context: CallbackContext):
     if update.message.forward_from_chat.type != update.message.forward_from_chat.CHANNEL:
         return await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
 
-
     result = get_source(source_id)
 
     if result is None:
