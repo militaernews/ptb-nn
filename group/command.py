@@ -12,8 +12,8 @@ async def loss(update: Update, context: CallbackContext):
     await reply_html(update, context, "loss")
 
 
-async def donbas(update: Update, context: CallbackContext):
-    await reply_html(update, context, "donbas")
+async def donbass(update: Update, context: CallbackContext):
+    await reply_html(update, context, "donbass")
 
 
 async def genozid(update: Update, context: CallbackContext):

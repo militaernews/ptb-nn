@@ -5,7 +5,7 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
 
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from config import NX_MEME, TELEGRAM
-from group.command import donbas, maps, loss, peace, genozid
+from group.command import donbass, maps, loss, peace, genozid
 from private.sources import lookup
 
 logging.basicConfig(
@@ -31,7 +31,7 @@ if __name__ == "__main__":
                        post_text_meme_nx))
 
     app.add_handler(CommandHandler("maps", maps))
-    app.add_handler(CommandHandler("donbas", donbas))
+    app.add_handler(CommandHandler("donbass", donbass))
     app.add_handler(CommandHandler("loss", loss))
     app.add_handler(CommandHandler("peace", peace))
     app.add_handler(CommandHandler("genozid", genozid))
