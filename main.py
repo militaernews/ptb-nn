@@ -7,9 +7,10 @@ from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
     ConversationHandler, CallbackContext, ChatJoinRequestHandler, CallbackQueryHandler
 
+import config
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from config import NX_MEME, TELEGRAM, ADMINS, NX_MAIN
-from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels
+from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin
 from private.join_request import join_request_buttons, accept_join_request
 from private.pattern import save_pattern, new_pattern, add_pattern_source, add_pattern, ADD_PATTERN_SOURCE, NEW_PATTERN, \
     SAVE_PATTERN
@@ -72,6 +73,8 @@ if __name__ == "__main__":
     ))
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
+
+    app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUP_UA) & filters.Regex("@admin"), admin))
 
     print("### Run Local ###")
     app.run_polling()
