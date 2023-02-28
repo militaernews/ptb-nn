@@ -1,6 +1,7 @@
-import datetime
 import logging
 import os
+import re
+from datetime import datetime
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -15,10 +16,10 @@ from private.join_request import join_request_buttons, accept_join_request
 from private.pattern import save_pattern, new_pattern, add_pattern_source, add_pattern, ADD_PATTERN_SOURCE, NEW_PATTERN, \
     SAVE_PATTERN
 from private.sources import lookup
+from util.regex import JOIN_ID
 
-LOG_FILENAME = r'C:\Users\Pentex\PycharmProjects\ptb-nyx-news\logs\log-' + f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.out"
-if not os.path.exists(LOG_FILENAME):
-    open(LOG_FILENAME, "w")
+LOG_FILENAME = rf"C:\Users\Pentex\PycharmProjects\ptb-nyx-news\logs\{datetime.now().strftime('%Y-%m-%d')}\{datetime.now().strftime('%H-%M-%S')}.out"
+os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s - %(funcName)20s()]: %(message)s ",
     level=logging.INFO, filename=LOG_FILENAME
@@ -36,8 +37,8 @@ if __name__ == "__main__":
         .persistence(PicklePersistence(filepath="persistence")) \
         .build()
 
-    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons,  block=False))
-    app.add_handler(CallbackQueryHandler(accept_join_request, pattern="join"))
+    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons,chat_id=config.DESTINATIONS, block=False))
+   # app.add_handler(CallbackQueryHandler(accept_join_request, pattern=JOIN_ID))
 
     app.add_handler(
         MessageHandler(
@@ -74,7 +75,7 @@ if __name__ == "__main__":
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
-    app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUP_UA) & filters.Regex("@admin"), admin))
+    app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUPS) & filters.Regex("@admin"), admin))
 
     print("### Run Local ###")
     app.run_polling()
