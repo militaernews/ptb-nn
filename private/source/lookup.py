@@ -1,14 +1,13 @@
 from telegram import Update
-from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
-from config import NYX, GROUP_SOURCE
+from config import GROUP_SOURCE
 from data.db import get_source
 
 
 async def lookup(update: Update, context: CallbackContext):
     print(update.message.forward_from_chat)
-    await update.message.reply_text(update.message.caption_html_urled,parse_mode=None)
+  #  await update.message.reply_text(update.message.caption_html_urled,parse_mode=None)
 
     source_id = update.message.forward_from_chat.id
 
@@ -26,11 +25,9 @@ async def lookup(update: Update, context: CallbackContext):
         await context.bot.send_message(GROUP_SOURCE, f"‼️ Neue Quelle\n\nchannel_id: <code>{source_id}</code>\n\nchannel_name: <code>{update.message.forward_from_chat.title}</code>\n\nusername: <code>{update.message.forward_from_chat.username}</code>")
         await update.message.forward(GROUP_SOURCE)
 
-        return await update.message.reply_text(
+        await update.message.reply_text(
             f"Tut mir leid. Eine Quelle mit der ID <code>{source_id}</code> ist nicht in meiner Datenbank hinterlegt.")
-
-
-    # todo: save source that is not present yet
+        return
 
     await update.message.reply_text(
         f"Quelle mit der ID <code>{source_id}</code> gefunden!\n\n{result.username} {result.bias} {result.display_name}")

@@ -1,34 +1,26 @@
-import logging
 import os
-import re
 from datetime import datetime
 
-from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
-    ConversationHandler, CallbackContext, ChatJoinRequestHandler, CallbackQueryHandler
+    ChatJoinRequestHandler
 
 import config
 from channel.meme import post_media_meme_nx, post_text_meme_nx
-from config import NX_MEME, TELEGRAM, ADMINS, NX_MAIN
+from config import NX_MEME, TELEGRAM, ADMINS
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin
-from private.join_request import join_request_buttons, accept_join_request
-from private.pattern import save_pattern, new_pattern, add_pattern_source, add_pattern, ADD_PATTERN_SOURCE, NEW_PATTERN, \
-    SAVE_PATTERN
-from private.sources import lookup
-from util.regex import JOIN_ID
+from private.join_request import join_request_buttons
+from private.pattern import add_pattern_handler
+from private.source.add import add_source_handler
+from private.source.edit import edit_source_handler
+from private.source.lookup import lookup
 
 LOG_FILENAME = rf"C:\Users\Pentex\PycharmProjects\ptb-nyx-news\logs\{datetime.now().strftime('%Y-%m-%d')}\{datetime.now().strftime('%H-%M-%S')}.out"
 os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s - %(funcName)20s()]: %(message)s ",
-    level=logging.INFO, filename=LOG_FILENAME
-)
-
-
-async def cancel(update: Update, context: CallbackContext) -> int:
-    await update.message.reply_text("Konversation gecancelt.")
-    return ConversationHandler.END
+# logging.basicConfig(
+#   format="%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s - %(funcName)20s()]: %(message)s ",
+#   level=logging.INFO, filename=LOG_FILENAME
+# )
 
 
 if __name__ == "__main__":
@@ -37,8 +29,8 @@ if __name__ == "__main__":
         .persistence(PicklePersistence(filepath="persistence")) \
         .build()
 
-    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons,chat_id=config.DESTINATIONS, block=False))
-   # app.add_handler(CallbackQueryHandler(accept_join_request, pattern=JOIN_ID))
+    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=config.DESTINATIONS, block=False))
+    # app.add_handler(CallbackQueryHandler(accept_join_request, pattern=JOIN_ID))
 
     app.add_handler(
         MessageHandler(
@@ -59,19 +51,10 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("genozid", genozid))
 
     app.add_handler(CommandHandler("setup", setup, filters.Chat(chat_id=ADMINS)))
-    app.add_handler(ConversationHandler(
-        entry_points=[CommandHandler("add_pattern", add_pattern)],
-        states={
-            ADD_PATTERN_SOURCE: [MessageHandler(filters.FORWARDED, add_pattern_source)],
-            NEW_PATTERN: [MessageHandler(filters.TEXT, new_pattern)],
-            SAVE_PATTERN: [
-                MessageHandler(filters.Regex("Speichern"), save_pattern),
-                MessageHandler(filters.Regex("Überarbeiten"), new_pattern)
-            ],
 
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    ))
+    app.add_handler(add_source_handler)
+    app.add_handler(edit_source_handler)
+    app.add_handler(add_pattern_handler)
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
