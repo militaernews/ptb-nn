@@ -4,7 +4,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
 
-from data.db import get_source, get_destinations, get_accounts
+from data.db import get_source, get_destinations, get_accounts, update_source
+from data.model import Source
 from private.common import text_filter, cancel_handler
 
 SOURCE_INVITE = "edit_source_invite"
@@ -52,7 +53,7 @@ def get_rating(context: CallbackContext) -> str | None:
         print("rating", context.chat_data[SOURCE_RATING],
               type(context.chat_data[SOURCE_RATING]))
         rating = ""
-        for _ in context.chat_data[SOURCE_RATING]:
+        for _ in range(context.chat_data[SOURCE_RATING]):
             rating += "⭐️"
         return rating
     else:
@@ -274,7 +275,7 @@ async def edit_source_rating(update: Update, context: CallbackContext) -> int:
     for i in range(5):
         rating += "⭐️"
 
-        keyboard.append([InlineKeyboardButton(rating, callback_data=f"{SOURCE_RATING}_{i}")])
+        keyboard.append([InlineKeyboardButton(rating, callback_data=f"{SOURCE_RATING}_{i + 1}")])
 
     await update.callback_query.edit_message_text(
         "Wähle welches Rating dieser Kanal erhalten soll. Ein Stern ist das schlechteste, fünf Sterne das beste. Achte hierbei auf die Aktualität, Detailvielfalt und Qualität der Meldungen, aber auch ob sie als Primärquelle fungiert, viele Medien hat, reißerisch geschrieben ist.\n\nMit /empty du kein Rating vergeben.\n\n"
@@ -332,7 +333,7 @@ async def clear_source_detail(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_description(update: Update, context: CallbackContext) -> int:
-    await update.callback_query.edit_message_text("Beschreibe  in 750 Zeichen was dieser Kanal macht.\n\n" \
+    await update.callback_query.edit_message_text("Beschreibe in 750 Zeichen was dieser Kanal macht.\n\n" \
                                                   "Zum entfernen tippe einfach /empty\n\n" \
                                                   f"Zwischengespeichert ist aktuell: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>",
 
@@ -446,6 +447,28 @@ async def edit_source_active(update: Update, context: CallbackContext) -> int:
     return SELECT_EDIT
 
 
+async def save_edit_source(update: Update, context: CallbackContext) -> int:
+    source = Source(
+        channel_id=context.chat_data[SOURCE_ID],
+        channel_name=context.chat_data[SOURCE_TITLE],
+        bias=context.chat_data[SOURCE_BIAS],
+        destination=context.chat_data[SOURCE_DESTINATION],
+        display_name=context.chat_data[SOURCE_DISPLAY],
+        invite=context.chat_data[SOURCE_INVITE],
+        username=context.chat_data[SOURCE_USERNAME],
+        api_id=context.chat_data[SOURCE_API],
+        description=context.chat_data[SOURCE_DESCRIPTION],
+        rating=context.chat_data[SOURCE_RATING],
+        detail_id=context.chat_data[SOURCE_DETAIL],
+        is_active=context.chat_data[SOURCE_ACTIVE]
+    )
+
+    update_source(source)
+
+    await update.message.reply_text(f"Änderungen für Quelle <code>{context.chat_data[SOURCE_ID]}</code> übernommen.")
+    return ConversationHandler.END
+
+
 back_handler = CallbackQueryHandler(edit_source_back, "back")
 edit_source_handler = ConversationHandler(
     entry_points=[CommandHandler("edit_source", edit_source)],
@@ -457,10 +480,11 @@ edit_source_handler = ConversationHandler(
             CallbackQueryHandler(edit_source_bias, SOURCE_BIAS),
             CallbackQueryHandler(edit_source_rating, SOURCE_RATING),
             CallbackQueryHandler(edit_source_detail, SOURCE_DETAIL),
-            CallbackQueryHandler(edit_source_destination, SOURCE_DESCRIPTION),
+            CallbackQueryHandler(edit_source_description, SOURCE_DESCRIPTION),
             CallbackQueryHandler(edit_source_api, SOURCE_API),
             CallbackQueryHandler(edit_source_destination, SOURCE_DESTINATION),
-            CallbackQueryHandler(edit_source_active, SOURCE_ACTIVE)
+            CallbackQueryHandler(edit_source_active, SOURCE_ACTIVE),
+            CommandHandler("save", save_edit_source)
         ],
 
         EDIT_DISPLAY: [back_handler, CommandHandler("empty", clear_source_display),
@@ -473,16 +497,16 @@ edit_source_handler = ConversationHandler(
                     MessageHandler(text_filter, save_source_bias),
                     ],
         EDIT_RATING: [back_handler, CommandHandler("empty", clear_source_rating),
-                      CallbackQueryHandler(save_source_rating, fr"{SOURCE_RATING}_\d")],
+                      CallbackQueryHandler(save_source_rating, fr"^{SOURCE_RATING}_\d$")],
         EDIT_DETAIL: [back_handler, CommandHandler("empty", clear_source_detail),
                       MessageHandler(filters.FORWARDED, save_source_detail)],
         EDIT_DESCRIPTION: [back_handler, CommandHandler("empty", clear_source_description),
                            MessageHandler(text_filter, save_source_description),
                            ],
         EDIT_API: [back_handler, CommandHandler("empty", clear_source_api),
-                   CallbackQueryHandler(save_source_api, fr"{SOURCE_API}_\d")],
+                   CallbackQueryHandler(save_source_api, fr"^{SOURCE_API}_\d+$")],
         EDIT_DESTINATION: [back_handler, CommandHandler("empty", clear_source_destination),
-                           CallbackQueryHandler(save_source_destination, fr"{SOURCE_DESTINATION}_\d")],
+                           CallbackQueryHandler(save_source_destination, fr"^{SOURCE_DESTINATION}_-\d+$")],
     },
     fallbacks=cancel_handler,
 

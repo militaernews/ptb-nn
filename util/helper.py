@@ -43,7 +43,7 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
         pass
 
 
-async def reply_photo(update: Update, context: CallbackContext, file_name: str, caption:str=None):
+async def reply_photo(update: Update, context: CallbackContext, file_name: str, caption: str = None):
     try:
         await update.message.delete()
     except  TelegramError as e:
@@ -62,13 +62,12 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
             )
             pass
 
-
     try:
         with open(f"res/{file_name}", "rb") as f:
             if update.message.reply_to_message is not None:
-                msg = await update.message.reply_to_message.reply_photo(f,caption=caption)
+                msg = await update.message.reply_to_message.reply_photo(f, caption=caption)
             else:
-                msg = await context.bot.send_photo(update.message.chat_id, f,caption=caption)
+                msg = await context.bot.send_photo(update.message.chat_id, f, caption=caption)
 
             context.job_queue.run_once(delete, MSG_REMOVAL_PERIOD, msg.chat_id, str(msg.message_id))
 

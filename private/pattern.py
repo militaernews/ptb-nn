@@ -1,5 +1,4 @@
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.constants import ParseMode
+from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, filters
 
 from data import db
@@ -59,20 +58,19 @@ async def new_pattern(update: Update, context: CallbackContext) -> int:
 
 
 async def save_pattern(update: Update, context: CallbackContext) -> int:
-
     db.set_pattern(context.chat_data["pattern_source_id"], context.chat_data["new_pattern"])
     return ConversationHandler.END
 
 
 add_pattern_handler = ConversationHandler(
-        entry_points=[CommandHandler("add_pattern", add_pattern)],
-        states={
-            ADD_PATTERN_SOURCE: [MessageHandler(filters.FORWARDED, add_pattern_source)],
-            NEW_PATTERN: [MessageHandler(text_filter, new_pattern)],
-            SAVE_PATTERN: [
-                CommandHandler("save",  save_pattern)
-            ],
+    entry_points=[CommandHandler("add_pattern", add_pattern)],
+    states={
+        ADD_PATTERN_SOURCE: [MessageHandler(filters.FORWARDED, add_pattern_source)],
+        NEW_PATTERN: [MessageHandler(text_filter, new_pattern)],
+        SAVE_PATTERN: [
+            CommandHandler("save", save_pattern)
+        ],
 
-        },
-        fallbacks=cancel_handler,
-    )
+    },
+    fallbacks=cancel_handler,
+)

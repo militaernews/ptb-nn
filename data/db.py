@@ -39,16 +39,35 @@ def set_source(source: SourceInsert):
         pass
 
 
-def get_destinations() -> Dict[int,str]:
+def update_source(source: Source):
+    try:
+        with conn.cursor() as c:
+            c.execute(
+                "UPDATE sources set channel_name = %s,bias = %s,destination = %s,display_name = %s,"
+                "invite = %s, username = %s,api_id = %s,description = %s,"
+                "rating = %s, detail_id = %s,is_active = %s where channel_id = %s;",
+                ( source.channel_name, source.bias, source.destination, source.display_name,
+                 source.invite,
+                 source.username, source.api_id, source.description, source.rating, source.detail_id, source.is_active,source.channel_id))
+
+            conn.commit()
+
+
+
+    except Exception as e:
+        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed", e)
+        pass
+
+
+def get_destinations() -> Dict[int, str]:
     with conn.cursor() as c:
         c.execute("select * from destinations;")
         dests: [Destination] = c.fetchall()
 
         res = dict()
-        d:Destination
+        d: Destination
         for d in dests:
             res[d.channel_id] = d.name
-
 
         print(res)
 
@@ -68,6 +87,7 @@ def get_accounts() -> Dict[int, str]:
         print(res)
 
         return res
+
 
 def set_pattern(channel_id: int, pattern: str):
     try:

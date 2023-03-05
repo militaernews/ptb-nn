@@ -27,6 +27,7 @@ class Source:
     detail_id: Optional[int] = None
     is_active: bool = False
 
+
 @dataclass
 class SourceInsert:
     channel_id: int
@@ -36,11 +37,13 @@ class SourceInsert:
     invite: Optional[str] = None
     username: Optional[str] = None
 
+
 @dataclass
 class Destination:
     channel_id: int
     name: str
     group_id: Optional[int]
+
 
 @dataclass
 class Account:

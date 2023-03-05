@@ -30,7 +30,6 @@ async def join_request_buttons(update: Update, context: CallbackContext):
         pass
 
 
-
 async def join_request_buttons_old(update: Update, context: CallbackContext):
     with open("res/how.html", "r", encoding='utf-8') as f:
         text = f.read()

@@ -160,24 +160,25 @@ async def save_source(update: Update, context: CallbackContext) -> int:
     ))
 
     await update.message.reply_text(
-        "Kanal wurde in der Datenbank gespeichtert. Wenn du ihn überarbeiten willst, dann tippe /edit_source")
+        "Kanal wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source")
     return ConversationHandler.END
 
+
 add_source_handler = ConversationHandler(
-        entry_points=[CommandHandler("add_source", add_source)],
-        states={
-            ADD_SOURCE: [MessageHandler(filters.FORWARDED, add_source_channel)],
-            NEEDS_INVITE: [MessageHandler(text_filter, add_source_invite)],
-            NEEDS_DISPLAY: [ CommandHandler("skip", skip_display),
-                             MessageHandler(text_filter, add_source_display ),
-                           ],
-            NEEDS_BIAS: [ CommandHandler("skip", skip_bias),
-                          MessageHandler(text_filter, add_source_bias),
+    entry_points=[CommandHandler("add_source", add_source)],
+    states={
+        ADD_SOURCE: [MessageHandler(filters.FORWARDED, add_source_channel)],
+        NEEDS_INVITE: [MessageHandler(text_filter, add_source_invite)],
+        NEEDS_DISPLAY: [CommandHandler("skip", skip_display),
+                        MessageHandler(text_filter, add_source_display),
+                        ],
+        NEEDS_BIAS: [CommandHandler("skip", skip_bias),
+                     MessageHandler(text_filter, add_source_bias),
 
-                         ],
-            SAVE_SOURCE: [ CommandHandler("save",  save_source) ]
+                     ],
+        SAVE_SOURCE: [CommandHandler("save", save_source)]
 
-        },
-        fallbacks=cancel_handler,
+    },
+    fallbacks=cancel_handler,
 
-    )
+)
