@@ -1,11 +1,12 @@
 import re
 
 from telegram import Update
-from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, filters
+from telegram.ext import CallbackContext, ConversationHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
+from config import ADMINS
 from data.db import get_source, set_source
 from data.model import SourceInsert
-from private.common import cancel_handler, text_filter
+from private.common import text_filter, cancel_handler
 
 SOURCE_INVITE = "new_source_invite"
 SOURCE_USERNAME = "new_source_username"
@@ -17,7 +18,7 @@ SOURCE_ID = "new_source_id"
 ADD_SOURCE, NEEDS_INVITE, NEEDS_DISPLAY, NEEDS_BIAS, SAVE_SOURCE = range(5)
 
 
-async def add_source(update: Update, context: CallbackContext) -> int:
+async def add_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.chat_data[SOURCE_ID] = None
     context.chat_data[SOURCE_TITLE] = None
     context.chat_data[SOURCE_DISPLAY] = None
@@ -66,7 +67,7 @@ async def add_source_channel(update: Update, context: CallbackContext) -> int | 
     return NEEDS_DISPLAY
 
 
-async def add_source_invite(update: Update, context: CallbackContext) -> int:
+async def add_source_invite(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     invite_match = re.findall(r"t.me/\+(.*)$", update.message.text)
 
     if len(invite_match) != 1:
@@ -86,7 +87,7 @@ async def add_source_invite(update: Update, context: CallbackContext) -> int:
     return NEEDS_DISPLAY
 
 
-async def add_source_display(update: Update, context: CallbackContext) -> int:
+async def add_source_display(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if len(update.message.text) > 20:
         await update.message.reply_text(
             "Der Displayname ist über 20 Zeichen lang, bitte sende mir etwas kürzeres. Du kann dich auch am Nutzernamen inspirieren lassen oder abkürzen.\n\n"
@@ -108,7 +109,7 @@ async def add_source_display(update: Update, context: CallbackContext) -> int:
     return NEEDS_BIAS
 
 
-async def add_source_bias(update: Update, context: CallbackContext) -> int:
+async def add_source_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.chat_data[SOURCE_BIAS] = source_bias = update.message.text
 
     text = "Passt das so?\n\n" \
@@ -124,7 +125,7 @@ async def add_source_bias(update: Update, context: CallbackContext) -> int:
     return SAVE_SOURCE
 
 
-async def skip_display(update: Update, context: CallbackContext) -> int:
+async def skip_display(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Setzen des Nutzernamens übersprungen.\n\n"
                                     "Viele Kanäle sind klar voreingenommen, berichten also sehr positiv oder ausschließlich über eine Seite und negativ oder nur über Misserfolge der anderen. Bitte sende mir nun in einer Nachricht ein oder mehrere Flaggen-Emojis für die entsprechende Voreingenommenheit des Kanals. Gebe hierzu einen Doppelpunkt ein und suche dann das Land auf English, beispielweise :russia:\n\n" \
                                     "Wenn der Kanal keine klar ersichtliche Voreingenommenheit aufweist, dann tippe einfach /skip"
@@ -134,7 +135,7 @@ async def skip_display(update: Update, context: CallbackContext) -> int:
     return NEEDS_BIAS
 
 
-async def skip_bias(update: Update, context: CallbackContext) -> int:
+async def skip_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Setzen der Voreingenommenheit übersprungen.\n\n"
 
                                     f"ID: {context.chat_data[SOURCE_ID]}\n\n"
@@ -148,7 +149,7 @@ async def skip_bias(update: Update, context: CallbackContext) -> int:
     return SAVE_SOURCE
 
 
-async def save_source(update: Update, context: CallbackContext) -> int:
+async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     set_source(SourceInsert(
         context.chat_data[SOURCE_ID],
         context.chat_data[SOURCE_TITLE],
@@ -165,7 +166,7 @@ async def save_source(update: Update, context: CallbackContext) -> int:
 
 
 add_source_handler = ConversationHandler(
-    entry_points=[CommandHandler("add_source", add_source)],
+    entry_points=[CommandHandler("add_source", add_source, filters=filters.Chat(ADMINS))],
     states={
         ADD_SOURCE: [MessageHandler(filters.FORWARDED, add_source_channel)],
         NEEDS_INVITE: [MessageHandler(text_filter, add_source_invite)],
@@ -180,5 +181,4 @@ add_source_handler = ConversationHandler(
 
     },
     fallbacks=cancel_handler,
-
 )

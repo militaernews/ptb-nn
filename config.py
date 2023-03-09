@@ -1,3 +1,4 @@
+import json
 import os
 
 from dotenv import load_dotenv
@@ -6,12 +7,13 @@ load_dotenv()
 
 TELEGRAM = os.getenv('TELEGRAM')
 DATABASE_URL = os.getenv('DATABASE_URL')
+ADMINS = json.loads(os.getenv('ADMINS'))
 
 CHANNEL_MEME = -1001486678205
 NX_MEME = -1001482614635
 NX_MAIN = -1001839268196
 GROUP_UA = -1001845172955
-NYX = 703453307
+
 LOG_GROUP = -1001739784948
 ADMIN_GROUP = -1001723195485
 
@@ -27,8 +29,3 @@ GROUPS = (
 GROUP_SOURCE = -1001694922864
 
 MSG_REMOVAL_PERIOD = 1200
-
-ADMINS = (NYX,
-          1621106192,  # babs
-          883445178  # konstantin
-          )

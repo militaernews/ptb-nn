@@ -4,6 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
 
+from config import ADMINS
 from data.db import get_source, get_destinations, get_accounts, update_source
 from data.model import Source
 from private.common import text_filter, cancel_handler
@@ -465,13 +466,14 @@ async def save_edit_source(update: Update, context: CallbackContext) -> int:
 
     update_source(source)
 
-    await update.message.reply_text(f"Änderungen für Quelle <code>{context.chat_data[SOURCE_ID]}</code> übernommen.")
+    await update.message.reply_text(f"Änderungen für Quelle <code>{context.chat_data[SOURCE_ID]}</code> übernommen.\n\n"
+                                    f"Falls du eine Quelle aktiviert oder deaktiviert hast, dann muss erst der komplette Bot neu gestartet werden, sodass die Quellen neu eingelesen werden.")
     return ConversationHandler.END
 
 
 back_handler = CallbackQueryHandler(edit_source_back, "back")
 edit_source_handler = ConversationHandler(
-    entry_points=[CommandHandler("edit_source", edit_source)],
+    entry_points=[CommandHandler("edit_source", edit_source, filters=filters.Chat(ADMINS))],
     states={
         EDIT_SOURCE: [MessageHandler(filters.FORWARDED, edit_source_channel)],
         SELECT_EDIT: [
@@ -509,5 +511,4 @@ edit_source_handler = ConversationHandler(
                            CallbackQueryHandler(save_source_destination, fr"^{SOURCE_DESTINATION}_-\d+$")],
     },
     fallbacks=cancel_handler,
-
 )

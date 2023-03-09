@@ -46,9 +46,10 @@ def update_source(source: Source):
                 "UPDATE sources set channel_name = %s,bias = %s,destination = %s,display_name = %s,"
                 "invite = %s, username = %s,api_id = %s,description = %s,"
                 "rating = %s, detail_id = %s,is_active = %s where channel_id = %s;",
-                ( source.channel_name, source.bias, source.destination, source.display_name,
+                (source.channel_name, source.bias, source.destination, source.display_name,
                  source.invite,
-                 source.username, source.api_id, source.description, source.rating, source.detail_id, source.is_active,source.channel_id))
+                 source.username, source.api_id, source.description, source.rating, source.detail_id, source.is_active,
+                 source.channel_id))
 
             conn.commit()
 
@@ -92,7 +93,7 @@ def get_accounts() -> Dict[int, str]:
 def set_pattern(channel_id: int, pattern: str):
     try:
         with conn.cursor() as c:
-            c.execute("INSERT INTO bloats(channel_id,pattern) VALUES (%s, '%s')", (channel_id, pattern))
+            c.execute("INSERT INTO bloats(channel_id,pattern) VALUES (%s, %s)", (channel_id, pattern))
 
             conn.commit()
 

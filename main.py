@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 
@@ -15,13 +16,14 @@ from private.source.add import add_source_handler
 from private.source.edit import edit_source_handler
 from private.source.lookup import lookup
 
-LOG_FILENAME = rf"C:\Users\Pentex\PycharmProjects\ptb-nyx-news\logs\{datetime.now().strftime('%Y-%m-%d')}\{datetime.now().strftime('%H-%M-%S')}.out"
+LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d')}/{datetime.now().strftime('%H-%M-%S')}.out"
 os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
-# logging.basicConfig(
-#   format="%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s - %(funcName)20s()]: %(message)s ",
-#   level=logging.INFO, filename=LOG_FILENAME
-# )
-
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)-5s] %(filename)16s:%(lineno)04d %(funcName)-20s : %(message)s',
+    level=logging.INFO,
+    filename=LOG_FILENAME,
+    datefmt='%Y-%m-%d:%H:%M:%S'
+)
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM).defaults(
