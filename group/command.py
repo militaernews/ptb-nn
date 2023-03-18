@@ -1,4 +1,5 @@
-from telegram import Update
+from telegram import Update, BotCommandScope, BotCommandScopeChat
+from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 import config
@@ -10,6 +11,7 @@ async def setup(update: Update, context: CallbackContext):
         ("maps", "Karten"),
         ("loss", "Verluste"),
         ("stats", "Statistiken"),
+        ("short", "Abkürzungen"),
         ("support", "Unterstützung der Ukrainer"),
         ("channels", "Ukrainekrieg auf Telegram"),
         ("peace", "Russlands Kriege"),
@@ -17,6 +19,17 @@ async def setup(update: Update, context: CallbackContext):
         ("genozid", "Kein Genozid im Donbass")
     ]
     await context.bot.set_my_commands(general_commands)
+
+    admin_commands = general_commands + [
+        ("add_source", "Quelle hinzufügen"),
+        ("edit_source", "Quelle bearbeiten"),
+        ("add_pattern", "Zu entfernenden Footer hinzufügen"),
+    ]
+    for chat_id in config.ADMINS:
+        try:
+            await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
+        except BadRequest: #to ignore chat not found
+            pass
 
     await update.message.reply_text("Commands updated.")
 
@@ -31,6 +44,9 @@ async def loss(update: Update, context: CallbackContext):
 
 async def stats(update: Update, context: CallbackContext):
     await reply_html(update, context, "stats")
+
+async def short(update: Update, context: CallbackContext):
+    await reply_html(update, context, "short")
 
 
 async def donbass(update: Update, context: CallbackContext):

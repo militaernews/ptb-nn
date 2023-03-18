@@ -1,5 +1,6 @@
 import inspect
 import logging
+from traceback import format_exc
 from typing import Optional, Dict
 
 import psycopg2
@@ -35,7 +36,8 @@ def set_source(source: SourceInsert):
 
 
     except Exception as e:
-        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed", e)
+        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed {repr(e)} - {format_exc()}")
+
         pass
 
 
@@ -56,7 +58,8 @@ def update_source(source: Source):
 
 
     except Exception as e:
-        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed", e)
+        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed {repr(e)} - {format_exc()}")
+
         pass
 
 
@@ -99,5 +102,6 @@ def set_pattern(channel_id: int, pattern: str):
 
 
     except Exception as e:
-        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed", e)
+        logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed {repr(e)} - {format_exc()}")
+
         pass

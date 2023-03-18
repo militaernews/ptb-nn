@@ -5,25 +5,32 @@ from datetime import datetime
 from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
     ChatJoinRequestHandler
+from warnings import filterwarnings
+from telegram.warnings import PTBUserWarning
+
 
 import config
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from config import NX_MEME, TELEGRAM, ADMINS
-from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin
+from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short
 from private.join_request import join_request_buttons
 from private.pattern import add_pattern_handler
 from private.source.add import add_source_handler
 from private.source.edit import edit_source_handler
 from private.source.lookup import lookup
 
-LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d')}/{datetime.now().strftime('%H-%M-%S')}.out"
+filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
+
+LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d')}/{datetime.now().strftime('%H-%M-%S')}.log"
 os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
 logging.basicConfig(
-    format='%(asctime)s [%(levelname)-5s] %(filename)16s:%(lineno)04d %(funcName)-20s : %(message)s',
-    level=logging.INFO,
+    format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
+    encoding="utf-8",
     filename=LOG_FILENAME,
-    datefmt='%Y-%m-%d:%H:%M:%S'
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
+
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM).defaults(
@@ -47,6 +54,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("donbass", donbass))
     app.add_handler(CommandHandler("loss", loss))
     app.add_handler(CommandHandler("stats", stats))
+    app.add_handler(CommandHandler("short", short))
     app.add_handler(CommandHandler("peace", peace))
     app.add_handler(CommandHandler("channels", channels))
     app.add_handler(CommandHandler("support", support))
