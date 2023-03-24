@@ -23,6 +23,15 @@ def get_source(channel_id: int) -> Optional[Source]:
         return res
 
 
+def get_destination_ids() -> [int]:
+    with conn.cursor() as c:
+        c.execute("select channel_id from destinations;")
+        res: [int] = [item.channel_id for item in  c.fetchall()]
+        print(f"destination ids: {res}")
+
+        return res
+
+
 def set_source(source: SourceInsert):
     try:
         with conn.cursor() as c:

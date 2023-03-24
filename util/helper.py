@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.error import TelegramError
 from telegram.ext import CallbackContext
 
-from config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from config import MSG_REMOVAL_PERIOD, LOG_GROUP, FOOTER
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
@@ -21,7 +21,7 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
 
     try:
         with open(f"res/{file_name}.html", "r", encoding='utf-8') as f:
-            text = f.read()
+            text = f'{f.read()}\n{FOOTER}'
 
         if update.message.reply_to_message is not None:
             if update.message.reply_to_message.from_user.first_name == "Telegram":

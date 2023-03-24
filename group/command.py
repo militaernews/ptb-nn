@@ -92,3 +92,18 @@ async def admin(update: Update, context: CallbackContext):
         await context.bot.send_message(config.ADMIN_GROUP, text, message_thread_id=206)
 
         await update.message.reply_to_message.reply_text(response)
+
+async def sofa(update: Update, context: CallbackContext):
+    await reply_photo(update, context, "sofa.jpg")
+
+
+async def bot(update: Update, context: CallbackContext):
+    await reply_photo(update, context, "bot.jpg")
+
+
+async def mimimi(update: Update, context: CallbackContext):
+    await reply_photo(update, context, "mimimi.jpg")
+
+
+async def cia(update: Update, context: CallbackContext):
+    await reply_photo(update, context, "cia.jpg")
