@@ -1,4 +1,4 @@
-from telegram import Update, BotCommandScope, BotCommandScopeChat
+from telegram import Update, BotCommandScopeChat
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
@@ -28,7 +28,7 @@ async def setup(update: Update, context: CallbackContext):
     for chat_id in config.ADMINS:
         try:
             await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
-        except BadRequest: #to ignore chat not found
+        except BadRequest:  # to ignore chat not found
             pass
 
     await update.message.reply_text("Commands updated.")
@@ -44,6 +44,7 @@ async def loss(update: Update, context: CallbackContext):
 
 async def stats(update: Update, context: CallbackContext):
     await reply_html(update, context, "stats")
+
 
 async def short(update: Update, context: CallbackContext):
     await reply_html(update, context, "short")
@@ -92,6 +93,7 @@ async def admin(update: Update, context: CallbackContext):
         await context.bot.send_message(config.ADMIN_GROUP, text, message_thread_id=206)
 
         await update.message.reply_to_message.reply_text(response)
+
 
 async def sofa(update: Update, context: CallbackContext):
     await reply_photo(update, context, "sofa.jpg")

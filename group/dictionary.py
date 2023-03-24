@@ -52,14 +52,14 @@ async def handle_putin_dict(update: Update, context: CallbackContext):
 
     for k, v in putin_dict.items():
 
-     #   print(k, update.message.text, k in update.message.text, " LLLLLLLLLLLLLLLLLLLLL")
+        #   print(k, update.message.text, k in update.message.text, " LLLLLLLLLLLLLLLLLLLLL")
 
-    #    print(k, " --- IN --- ", v)
+        #    print(k, " --- IN --- ", v)
         if k.lower() in update.message.text.lower():  # and k not in matches.keys():
             print("---------- MATCH ----------")
             matches[k] = v
 
-    logging.info(f"{update.message.text} -------{ matches, putin_dict}")
+    logging.info(f"{update.message.text} -------{matches, putin_dict}")
 
     if len(matches) == 0:
         return
@@ -70,6 +70,7 @@ async def handle_putin_dict(update: Update, context: CallbackContext):
         text += f"\n\n❗️ „{k}” muss „{v}” lauten!"
 
     await update.message.reply_text(text)
+
 
 async def handle_other_chats(update: Update, context: CallbackContext):
     await handle_bingo(update, context)

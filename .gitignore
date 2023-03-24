@@ -162,3 +162,5 @@ cython_debug/
 
 persistence
 logs
+loss.png
+field.png

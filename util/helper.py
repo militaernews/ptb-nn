@@ -20,7 +20,7 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
         pass
 
     try:
-        with open(f"res/{file_name}.html", "r", encoding='utf-8') as f:
+        with open(f"res/strings/{file_name}.html", "r", encoding='utf-8') as f:
             text = f'{f.read()}\n{FOOTER}'
 
         if update.message.reply_to_message is not None:
@@ -52,7 +52,7 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
 
     if caption is not None:
         try:
-            with open(f"res/{caption}.html", "r", encoding='utf-8') as f:
+            with open(f"res/strings/{caption}.html", "r", encoding='utf-8') as f:
                 caption = f.read()
         except Exception as e:
             await context.bot.send_message(
@@ -63,7 +63,7 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
             pass
 
     try:
-        with open(f"res/{file_name}", "rb") as f:
+        with open(f"res/img/{file_name}", "rb") as f:
             if update.message.reply_to_message is not None:
                 msg = await update.message.reply_to_message.reply_photo(f, caption=caption)
             else:

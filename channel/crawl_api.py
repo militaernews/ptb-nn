@@ -1,5 +1,4 @@
 import datetime
-import io
 import json
 import logging
 from itertools import islice
@@ -7,7 +6,7 @@ from typing import Dict
 
 import cairosvg
 import httpx
-from telegram import Update, InputMediaPhoto
+from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext
 
 import config
@@ -112,7 +111,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     print("------")
 
     for y, item in enumerate(items):
-        logging.info(f"items :: {item}" )
+        logging.info(f"items :: {item}")
 
         for x, (k, v) in enumerate(item.items()):
             #    print(y, x, "--", k, v)
@@ -149,7 +148,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
             if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
                 svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{(y * height_cell) + (y + 1) * margin + heading_space}"
-                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{str(divide(v * 100, LOSS_STOCKPILE[k])).replace(".",",")}%</text>"""
+                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{str(divide(v * 100, LOSS_STOCKPILE[k])).replace(".", ",")}%</text>"""
 
     svg += f"""
     
@@ -157,7 +156,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
        <text
             text-anchor="middle"
             transform="rotate(-45)"
-            font-size="{heading_size*1.6}"
+            font-size="{heading_size * 1.6}"
             fill-opacity="0.1"
             fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
     </g>
@@ -168,19 +167,21 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
     cairosvg.svg2png(bytestring=svg, write_to='loss.png', background_color=background_color)
 
+
 create_svg({
-'personnel': 161520, 'tanks': 3492,'apv': 6799, 'artillery': 2528,
-'mlrs': 502, 'aaws': 262,
-'aircraft': 304, 'helicopters': 289,
-'vehicles': 5377, 'boats': 18,'se': 257, 'uav': 2132,
-'missiles': 907, 'presidents': 0
-},{
-'personnel': 980, 'tanks': 8,'apv': 10, 'artillery': 9,
-'mlrs': 7, 'aaws': 2,
-'aircraft': 0, 'helicopters': 0,
-'vehicles': 10, 'boats': 0,'se': 1, 'uav': 12,
-'missiles': 0, 'presidents': 0
+    'personnel': 161520, 'tanks': 3492, 'apv': 6799, 'artillery': 2528,
+    'mlrs': 502, 'aaws': 262,
+    'aircraft': 304, 'helicopters': 289,
+    'vehicles': 5377, 'boats': 18, 'se': 257, 'uav': 2132,
+    'missiles': 907, 'presidents': 0
+}, {
+    'personnel': 980, 'tanks': 8, 'apv': 10, 'artillery': 9,
+    'mlrs': 7, 'aaws': 2,
+    'aircraft': 0, 'helicopters': 0,
+    'vehicles': 10, 'boats': 0, 'se': 1, 'uav': 12,
+    'missiles': 0, 'presidents': 0
 }, "15.03.2023")
+
 
 async def get_api(context: CallbackContext):
     print("get api")
@@ -188,7 +189,7 @@ async def get_api(context: CallbackContext):
     now = get_time()
     print("crawl: ", key, now)
 
-    logging.info(f">>>> waiting... { datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: { key} :: { now}")
+    logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
 
     if key != now:
         logging.info("---- requesting ---- ")

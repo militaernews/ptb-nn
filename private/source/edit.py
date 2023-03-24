@@ -1,7 +1,6 @@
-import io
 import re
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
 
@@ -121,8 +120,6 @@ def change_keyboard(context: CallbackContext) -> InlineKeyboardMarkup:
 
 async def display_selection(update: Update, context: CallbackContext) -> int:
     await update.message.reply_text(change_overview(context), reply_markup=change_keyboard(context))
-
-
 
     return SELECT_EDIT
 
@@ -452,8 +449,6 @@ async def edit_source_active(update: Update, context: CallbackContext) -> int:
 
 
 async def save_edit_source(update: Update, context: CallbackContext) -> int:
-
-
     source = Source(
         channel_id=context.chat_data[SOURCE_ID],
         channel_name=context.chat_data[SOURCE_TITLE],
