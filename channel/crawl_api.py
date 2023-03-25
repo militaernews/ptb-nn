@@ -168,21 +168,6 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     cairosvg.svg2png(bytestring=svg, write_to='loss.png', background_color=background_color)
 
 
-create_svg({
-    'personnel': 161520, 'tanks': 3492, 'apv': 6799, 'artillery': 2528,
-    'mlrs': 502, 'aaws': 262,
-    'aircraft': 304, 'helicopters': 289,
-    'vehicles': 5377, 'boats': 18, 'se': 257, 'uav': 2132,
-    'missiles': 907, 'presidents': 0
-}, {
-    'personnel': 980, 'tanks': 8, 'apv': 10, 'artillery': 9,
-    'mlrs': 7, 'aaws': 2,
-    'aircraft': 0, 'helicopters': 0,
-    'vehicles': 10, 'boats': 0, 'se': 1, 'uav': 12,
-    'missiles': 0, 'presidents': 0
-}, "15.03.2023")
-
-
 async def get_api(context: CallbackContext):
     print("get api")
     key = context.bot_data.get("last_loss", "")
@@ -245,16 +230,22 @@ async def get_api(context: CallbackContext):
                 daily = round(v / days, 1)
                 text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag"
                 if k in LOSS_STOCKPILE:
-                    text += f"\n• Lagerbestand noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
+                    if k == "personnel":
+                        storage = "Uniformiert"
+                    else:
+                        storage = "Lagerbestand"
+                    text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
 
         last_id = context.bot_data.get("last_loss_id", 1)
 
-        text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken.\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>\n\n📊 <a href='https://t.me/invasion_ukraine/{last_id}'>vorige Statistik</a>{config.FOOTER}"
+        text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
+                f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
+                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{config.FOOTER}"
 
         logging.info(text)
 
         with open("loss.png", "rb") as f:
-            msg = await context.bot.send_photo(config.CHANNEL, photo=f, caption=text)
+            msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
 
         context.bot_data["last_loss"] = now
         context.bot_data["last_loss_id"] = msg.id
@@ -266,5 +257,5 @@ async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #    context.bot_data.pop("last_loss_id", 18147)
     await get_api(context)
     print("help?")
-    context.job_queue.run_repeating(get_api, datetime.timedelta(hours=2))
+    context.job_queue.run_repeating(get_api, datetime.timedelta(hours=1.5))
     await update.message.reply_text("Scheduled Api Crawler.")

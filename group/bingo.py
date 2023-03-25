@@ -334,7 +334,7 @@ async def handle_bingo(update: Update, context: CallbackContext):
                     else:
                         text += " sind gesuchte Begriffe"
 
-                    text += " im MilitärNews-Bingo."
+                    text += " im Ukraine-Bingo."
 
                 elif index == found_amount - 2:
                     text += " und "
