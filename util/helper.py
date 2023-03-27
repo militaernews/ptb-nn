@@ -2,7 +2,8 @@ from telegram import Update
 from telegram.error import TelegramError
 from telegram.ext import CallbackContext
 
-from config import MSG_REMOVAL_PERIOD, LOG_GROUP, FOOTER
+from config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from constant import FOOTER
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"

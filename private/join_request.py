@@ -8,7 +8,7 @@ from util.regex import JOIN_ID
 
 
 async def join_request_buttons(update: Update, context: CallbackContext):
-    with open("res/de/how.html", "r", encoding='utf-8') as f:
+    with open("res/strings/how.html", "r", encoding='utf-8') as f:
         text = f.read()
 
     print("join: ", update.chat_join_request)
@@ -31,7 +31,7 @@ async def join_request_buttons(update: Update, context: CallbackContext):
 
 
 async def accept_join_request(update: Update, context: CallbackContext):
-    with open("res/de/how.html", "r", encoding='utf-8') as f:
+    with open("res/strings/how.html", "r", encoding='utf-8') as f:
         text = f.read()
 
     print(update.callback_query)

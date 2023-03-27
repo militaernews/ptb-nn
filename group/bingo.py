@@ -11,7 +11,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
-from config import FOOTER
+from constant import FOOTER
 
 load_dotenv()
 
@@ -318,7 +318,10 @@ async def handle_bingo(update: Update, context: CallbackContext):
             create_svg(context.bot_data["bingo"])
             with open("field.png", "rb") as f:
                 msg = await  update.message.reply_photo(photo=f,
-                                                        caption=f"<b>BINGO! 🥳</b>\n\n{mention_html(update.message.from_user.id, update.message.from_user.first_name)} hat den letzten Begriff beigetragen. Die erratenen Begriffe sind gelb eingefärbt.\n\nEine neue Runde beginnt...\n{FOOTER}")
+                                                        caption=f"<b>BINGO! 🥳</b>"
+                                                                f"\n\n{mention_html(update.message.from_user.id, update.message.from_user.first_name)} hat den letzten Begriff beigetragen. Die erratenen Begriffe sind gelb eingefärbt."
+                                                                f"\n\nEine neue Runde beginnt..."
+                                                                f"\n{FOOTER}")
                 await msg.pin()
             context.bot_data["bingo"] = generate_bingo_field()
         else:
@@ -352,7 +355,10 @@ async def bingo_field(update: Update, context: CallbackContext):
         create_svg(context.bot_data["bingo"])
         with open("field.png", "rb") as f:
             await update.message.reply_photo(photo=f,
-                                             caption=f"<b>Ukraine-Bingo</b>\n\nWenn eine in diesem Chat gesendete Nachricht auf dem Spielfeld vorkommendende Begriffe enthält, werden diese rausgestrichen.\n\nIst eine gesamte Zeile oder Spalte durchgestrichen, dann heißt es <b>BINGO!</b> und eine neue Runde startet.\n{FOOTER}")
+                                             caption=f"<b>Ukraine-Bingo</b>\n\n"
+                                                     f"Wenn eine in diesem Chat gesendete Nachricht auf dem Spielfeld vorkommendende Begriffe enthält, werden diese rausgestrichen.\n\n"
+                                                     f"Ist eine gesamte Zeile oder Spalte durchgestrichen, dann heißt es <b>BINGO!</b> und eine neue Runde startet.\n"
+                                                     f"{FOOTER}")
     except FileNotFoundError as e:
         logging.info("No field yet")
 

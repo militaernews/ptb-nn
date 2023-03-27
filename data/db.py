@@ -114,3 +114,12 @@ def set_pattern(channel_id: int, pattern: str):
         logger.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed {repr(e)} - {format_exc()}")
 
         pass
+
+
+def get_footer_by_channel_id(channel_id: int) -> str:
+    with conn.cursor() as c:
+        c.execute("select footer from destinations where channel_id = %s;", [channel_id])
+        res = c.fetchone()[0]
+        print(f"{channel_id} - footer: {res}")
+
+        return res

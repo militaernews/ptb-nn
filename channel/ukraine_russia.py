@@ -4,8 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext
 
 from config import CHANNEL_UA_RU
-
-FOOTER = "\n\n\n‼️ Wichtiges zum Ukraine-Krieg:\n👉 <b>@Ukraine_Russland_Krieg_2022</b>"
+from constant import FOOTER_UA_RU
 
 
 async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):
@@ -13,7 +12,7 @@ async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):
 
     text = update.channel_post.text_html_urled
 
-    await update.channel_post.edit_text(text + FOOTER)
+    await update.channel_post.edit_text(text + FOOTER_UA_RU, disable_web_page_preview=False)
 
 
 async def append_footer(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -28,7 +27,7 @@ async def append_footer(update: Update, context: ContextTypes.DEFAULT_TYPE):
             original_caption = ""
 
         try:
-            await update.channel_post.edit_caption(original_caption + FOOTER)
+            await update.channel_post.edit_caption(original_caption + FOOTER_UA_RU)
         except Exception as e:
             logging.exception("Error editing single :: ", e)
             pass
@@ -76,7 +75,7 @@ async def append_footer_mg(context: CallbackContext):
             pass
 
     try:
-        await context.bot.edit_message_caption(CHANNEL_UA_RU, posts[0], caption=context.job.data["text"] + FOOTER)
+        await context.bot.edit_message_caption(CHANNEL_UA_RU, posts[0], caption=context.job.data["text"] + FOOTER_UA_RU)
     except Exception as e:
         logging.exception("Error editing mediagroup text :: ", e)
         pass

@@ -23,8 +23,6 @@ GROUPS = (
     -1001263239083  # ukrger
 )
 
-FOOTER = '\n\n<b>Verbinde dich mit weiteren Unterstützern</b>!\n👉🏼 <a href="https://t.me/ukr_ger">Deutsch 🤝 Ukraine️</a>'
-
 GROUP_SOURCE = -1001694922864
 
 CHANNEL_UA_RU = -1001640548153

@@ -10,8 +10,9 @@ from telegram.warnings import PTBUserWarning
 
 import config
 from channel.crawl_api import setup_crawl
+from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
-from channel.ukraine_russia import append_footer, append_footer_text
+from channel.ukraine_russia import append_footer, append_footer_text, FOOTER_UA_RU
 from config import NX_MEME, TELEGRAM, ADMINS
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
@@ -52,8 +53,10 @@ if __name__ == "__main__":
     app.add_handler(MessageHandler(filter_meme & filters.TEXT, post_text_meme_nx))
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_ru_ua & filter_media, append_footer))
-    app.add_handler(MessageHandler(filter_ru_ua & filters.TEXT, append_footer_text))
+    app.add_handler(MessageHandler(filter_ru_ua & filter_media &~filters.CaptionRegex(FOOTER_UA_RU), append_footer))
+    filter_ru_ua_text = filter_ru_ua & filters.TEXT &~filters.Regex(FOOTER_UA_RU)
+    app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
+    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
 
     app.add_handler(CommandHandler("maps", maps))
     app.add_handler(CommandHandler("donbass", donbass))
