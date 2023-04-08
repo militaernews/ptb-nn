@@ -1,6 +1,8 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
+import constant
+
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
     if update.channel_post.media_group_id is None:
@@ -57,7 +59,7 @@ async def post_text_meme_nx(update: Update, context: CallbackContext):
 
 
 def format_meme_footer(original_text: str) -> str:
-    return f"{original_text}\n\n👉🏼 Abonniere @NYX_Memes für mehr! 😎"
+    return f"{original_text}{constant.FOOTER_MEME}"
 
 
 async def append_buttons_news(update: Update, context: CallbackContext):

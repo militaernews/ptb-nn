@@ -1,3 +1,5 @@
+import os.path
+
 from telegram import Update
 from telegram.error import TelegramError
 from telegram.ext import CallbackContext
@@ -12,6 +14,19 @@ MSG_ID = "msg_id"
 async def delete(context: CallbackContext):
     await context.bot.delete_message(context.job.data[CHAT_ID], context.job.data[MSG_ID])
 
+def get_text(update: Update, filename:str):
+
+    code = update.message.from_user.language_code or "de"
+    print(update.message.from_user.language_code , code)
+
+    path = f"res/strings/{code}/{filename}.html"
+
+    if not os.path.exists(path):
+        path =f"res/strings/de/{filename}.html"
+
+
+    with open(path, "r", encoding='utf-8') as f:
+        return f.read()
 
 async def reply_html(update: Update, context: CallbackContext, file_name: str):
     try:
@@ -21,8 +36,8 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
         pass
 
     try:
-        with open(f"res/strings/{file_name}.html", "r", encoding='utf-8') as f:
-            text = f'{f.read()}\n{FOOTER}'
+
+        text = f'{get_text(update,file_name)}\n{FOOTER}'
 
         if update.message.reply_to_message is not None:
             if update.message.reply_to_message.from_user.first_name == "Telegram":
@@ -53,8 +68,7 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
 
     if caption is not None:
         try:
-            with open(f"res/strings/{caption}.html", "r", encoding='utf-8') as f:
-                caption = f.read()
+            get_text(update,caption)
         except Exception as e:
             await context.bot.send_message(
                 LOG_GROUP,

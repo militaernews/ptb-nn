@@ -14,7 +14,7 @@ from telegram.ext import ContextTypes
 from config import CHANNEL_UA_RU
 from constant import FOOTER_UA_RU
 
-PATTERN_TWITTER=re.compile(r"(https*://twitter.com/\S+/status/\d+)")
+PATTERN_TWITTER = re.compile(r"(https*://twitter.com/\S+/status/\d+)")
 
 service = Service("tools/chromedriver.exe")
 chrome_options = Options()
@@ -49,7 +49,7 @@ async def get_screenshot(url: str, screenshot_path: str):
 
 async def handle_twitter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("twitter")
-    if len(update.channel_post.text)>600:
+    if len(update.channel_post.text) > 600:
         return
 
     try:
@@ -61,12 +61,10 @@ async def handle_twitter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_id = re.findall(r"status/(\d+)", url)[0]
     screenshot_path = f'img/{status_id}.png'
 
-
-
     await get_screenshot(url, screenshot_path)
 
     await context.bot.send_photo(chat_id=CHANNEL_UA_RU,
-                           photo=open(screenshot_path, "rb"),
-                           caption=update.channel_post.text + FOOTER_UA_RU)
+                                 photo=open(screenshot_path, "rb"),
+                                 caption=update.channel_post.text + FOOTER_UA_RU)
 
     Path(screenshot_path).unlink(missing_ok=True)

@@ -1,4 +1,5 @@
 import logging
+import re
 
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext
@@ -11,6 +12,9 @@ async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):
     print(f"append footer text :: {update}")
 
     text = update.channel_post.text_html_urled
+
+    if len(re.findall(FOOTER_UA_RU,text)) != 0:
+        return
 
     await update.channel_post.edit_text(text + FOOTER_UA_RU, disable_web_page_preview=False)
 

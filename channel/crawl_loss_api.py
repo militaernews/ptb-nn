@@ -10,6 +10,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext
 
 import config
+from constant import FOOTER
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
@@ -156,7 +157,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
        <text
             text-anchor="middle"
             transform="rotate(-45)"
-            font-size="{heading_size * 1.6}"
+            font-size="{75}"
             fill-opacity="0.1"
             fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
     </g>
@@ -185,7 +186,7 @@ async def get_api(context: CallbackContext):
 
         try:
             new_losses = data[now]
-            new_losses.pop("captive")
+           # new_losses.pop("captive")
 
         except KeyError as e:
             print("Could not get entry with key: ", e)
@@ -240,7 +241,7 @@ async def get_api(context: CallbackContext):
 
         text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
                 f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{config.FOOTER}"
+                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{FOOTER}"
 
         logging.info(text)
 
