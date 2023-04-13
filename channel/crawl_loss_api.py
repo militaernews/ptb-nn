@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 from itertools import islice
+from statistics import median
 from typing import Dict
 
 import cairosvg
@@ -10,6 +11,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext
 
 import config
+import constant
 from constant import FOOTER
 
 LOSS_DESCRIPTIONS = {
@@ -186,7 +188,7 @@ async def get_api(context: CallbackContext):
 
         try:
             new_losses = data[now]
-           # new_losses.pop("captive")
+        # new_losses.pop("captive")
 
         except KeyError as e:
             print("Could not get entry with key: ", e)
@@ -209,6 +211,22 @@ async def get_api(context: CallbackContext):
             'presidents': 0
         }
 
+        median_losses = {
+            'personnel': [],
+            'tanks': [],
+            'apv': [],
+            'artillery': [],
+            'mlrs': [],
+            'aaws':[],
+            'aircraft': [],
+            'helicopters':[],
+            'vehicles':[],
+            'boats': [],
+            'se': [],
+            'uav':[],
+            'missiles': [],
+        }
+
         for day, item in data.items():
             #  print(day)
 
@@ -217,6 +235,9 @@ async def get_api(context: CallbackContext):
 
                 if k != "captive":
                     total_losses[k] = total_losses[k] + v
+
+                    if k!="presidents":
+                        median_losses[k].append(v)
 
         print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
@@ -229,7 +250,8 @@ async def get_api(context: CallbackContext):
         for k, v in total_losses.items():
             if k != "presidents" and new_losses[k] != 0:
                 daily = round(v / days, 1)
-                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag"
+             #   print(daily,median_losses[k])
+                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {median(median_losses[k])}"
                 if k in LOSS_STOCKPILE:
                     if k == "personnel":
                         storage = "Uniformiert"
@@ -241,7 +263,7 @@ async def get_api(context: CallbackContext):
 
         text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
                 f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{FOOTER}"
+                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
 
         logging.info(text)
 
