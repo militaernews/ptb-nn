@@ -18,8 +18,9 @@ from constant import FOOTER_MEME
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
-    mimimi, sofa, bot
+    mimimi, sofa, bot, start
 from group.dictionary import handle_other_chats
+from group.youtubedownload import get_youtube_video, YT_PATTERN
 from private.join_request import join_request_buttons
 from private.pattern import add_pattern_handler
 from private.source.add import add_source_handler
@@ -42,6 +43,7 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM).defaults(
         Defaults(parse_mode=ParseMode.HTML, disable_web_page_preview=True)) \
         .persistence(PicklePersistence(filepath="persistence")) \
+        .read_timeout(15).get_updates_read_timeout(50)\
         .build()
 
     app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
@@ -77,6 +79,8 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
     app.add_handler(CommandHandler("crawl", setup_crawl, filters.Chat(ADMINS)))
 
+    app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
+
     app.add_handler(add_source_handler)
     app.add_handler(edit_source_handler)
     app.add_handler(add_pattern_handler)
@@ -84,6 +88,8 @@ if __name__ == "__main__":
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
     app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUPS) & filters.Regex("^@admin"), admin))
+
+    app.add_handler(MessageHandler(filters.Regex(YT_PATTERN) & ~filters.ChatType.CHANNEL, get_youtube_video))
 
     app.add_handler(CommandHandler("bingo", bingo_field, filters.User(ADMINS)))
     app.add_handler(CommandHandler("reset_bingo", reset_bingo, filters.Chat(ADMINS)))

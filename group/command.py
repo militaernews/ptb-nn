@@ -3,7 +3,7 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 import config
-from util.helper import reply_html, reply_photo
+from util.helper import reply_html, reply_photo, reply_html_greet
 
 
 async def setup(update: Update, context: CallbackContext):
@@ -109,3 +109,6 @@ async def mimimi(update: Update, context: CallbackContext):
 
 async def cia(update: Update, context: CallbackContext):
     await reply_photo(update, context, "cia.jpg")
+
+async def start(update: Update, context: CallbackContext):
+    await reply_html_greet(update, context, "start")

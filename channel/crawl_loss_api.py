@@ -250,8 +250,7 @@ async def get_api(context: CallbackContext):
         for k, v in total_losses.items():
             if k != "presidents" and new_losses[k] != 0:
                 daily = round(v / days, 1)
-             #   print(daily,median_losses[k])
-                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {median(median_losses[k])}"
+                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
                 if k in LOSS_STOCKPILE:
                     if k == "personnel":
                         storage = "Uniformiert"

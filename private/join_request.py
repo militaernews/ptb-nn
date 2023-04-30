@@ -4,12 +4,11 @@ import re
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext
 
+from util.helper import get_text2
 from util.regex import JOIN_ID
 
 
 async def join_request_buttons(update: Update, context: CallbackContext):
-    with open("res/strings/how.html", "r", encoding='utf-8') as f:
-        text = f.read()
 
     print("join: ", update.chat_join_request)
 
@@ -21,7 +20,7 @@ async def join_request_buttons(update: Update, context: CallbackContext):
         await update.chat_join_request.from_user.send_photo(
             open("res/nn_info.jpg", "rb"),
             caption=(
-                f"Herzlich Willkommen, {update.chat_join_request.from_user.name} ✌🏼\n\n{text}"),
+                f"Herzlich Willkommen, {update.chat_join_request.from_user.name} ✌🏼\n\n{get_text2(update.chat_join_request.from_user,'how')}"),
             reply_markup=InlineKeyboardMarkup.from_button(
                 InlineKeyboardButton("Kanal teilen ⏩",
                                      url=f"https://t.me/share/url?url=https://t.me/nyx_news&text={share_text}")))
@@ -31,8 +30,6 @@ async def join_request_buttons(update: Update, context: CallbackContext):
 
 
 async def accept_join_request(update: Update, context: CallbackContext):
-    with open("res/strings/how.html", "r", encoding='utf-8') as f:
-        text = f.read()
 
     print(update.callback_query)
 
@@ -45,7 +42,7 @@ async def accept_join_request(update: Update, context: CallbackContext):
         pass
     share_text = "\n🚨 Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle."
     await update.callback_query.edit_message_caption(
-        f"{text}\n\n<b>Herzlich Willkommen! Bitte teile Nyx News mit deinen Kontakten</b> 😊",
+        f"{get_text2(update.callback_query.from_user,'how')}\n\n<b>Herzlich Willkommen! Bitte teile Nyx News mit deinen Kontakten</b> 😊",
         reply_markup=InlineKeyboardMarkup.from_button(
             InlineKeyboardButton("Kanal teilen ⏩",
                                  url=f"https://t.me/share/url?url=https://t.me/nyx_news&text={share_text}")))
