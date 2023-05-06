@@ -57,6 +57,7 @@ if __name__ == "__main__":
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
     app.add_handler(MessageHandler(filter_ru_ua & filter_media &  ~filters.CaptionRegex(FOOTER_UA_RU), append_footer))
+
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
     app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))

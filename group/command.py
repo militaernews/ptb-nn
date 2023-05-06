@@ -15,7 +15,7 @@ async def setup(update: Update, context: CallbackContext):
         ("support", "Unterstützung der Ukrainer"),
         ("channels", "Ukrainekrieg auf Telegram"),
         ("peace", "Russlands Kriege"),
-        ("donbass", "Beschuss des Donbass seit 2014"),
+        ("donbass.html", "Beschuss des Donbass seit 2014"),
         ("genozid", "Kein Genozid im Donbass")
     ]
     await context.bot.set_my_commands(general_commands)
@@ -51,7 +51,7 @@ async def short(update: Update, context: CallbackContext):
 
 
 async def donbass(update: Update, context: CallbackContext):
-    await reply_html(update, context, "donbass")
+    await reply_html(update, context, "donbass.html")
 
 
 async def channels(update: Update, context: CallbackContext):

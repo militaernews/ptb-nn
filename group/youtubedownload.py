@@ -1,12 +1,39 @@
+import asyncio
 import re
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-
+from datetime import datetime
+from functools import partial
 from pytube import YouTube
-from telegram import Update
+from telegram import Update, Message
 from telegram.ext import CallbackContext
 
 YT_PATTERN = re.compile(
     r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu\.be))(\/(?:[\w\-]+\?v=|embed\/|shorts\/|v\/)?)([\w\-]+)(?:\S+)?")
+
+import youtube_dl
+from youtube_dl import YoutubeDL as YDL
+
+PPE = ProcessPoolExecutor()
+
+
+async def my_hook(d, msg: Message, update: Update):
+    print(d)
+    if d['status'] == 'downloading':
+        print('Downloading video!')
+
+        await msg.edit_text(f"Downloading video '{d['title']}'\n\n{d['_percent_str']}%, {d['_eta_str']}")
+    if d['status'] == 'finished':
+        print('Downloaded!')
+
+        print(d['destination'])
+        await update.message.reply_video(f"{d['destination']}",
+                                         caption=f"<b>{d['title']} - {d['uploader']}</b>\n\n{d['url']}",
+                                         supports_streaming=True)
+
+        await msg.delete()
+
+        Path(d['destination']).unlink(missing_ok=True)
 
 
 async def get_youtube_video(update: Update, context: CallbackContext):
@@ -19,26 +46,14 @@ async def get_youtube_video(update: Update, context: CallbackContext):
 
     print("--")
 
-    video_path = YouTube(f"https://www.youtube.com/embed/{video_url[4]}?feature=oembed",
-                         use_oauth=True,
-                         allow_oauth_cache=True,
-                         )\
-        .streams\
-        .filter(progressive=True, file_extension='mp4')\
-        .order_by('resolution')\
-        .desc()\
-        .first()
-
-    print(video_path)
-
     msg = await update.message.reply_text("Downloading video... please wait.")
+    # await context.bot.send_chat_action(update.effective_chat.id,"Downloading video...")
 
-    file_path = video_path.download(output_path="vid", filename=filename)
+    ydl_opts = {
+        'outtmpl': 'vid/%(id)s.%(ext)s',
+        "progress_hooks": [lambda d: asyncio.get_running_loop().run_in_executor(PPE, my_hook, d, msg, update)],
+        'noplaylist': True
+    }
 
-    await update.message.reply_video(file_path,
-                                     caption=f"<b>{video_path.title}</b>\n\n{''.join(video_url)}",
-                                     supports_streaming=True)
-
-    await msg.delete()
-
-    Path(file_path).unlink(missing_ok=True)
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([''.join(video_url)])
