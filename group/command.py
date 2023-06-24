@@ -1,4 +1,7 @@
-from telegram import Update, BotCommandScopeChat
+from uuid import uuid4
+
+from telegram import Update, BotCommandScopeChat, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton, \
+    InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
@@ -48,6 +51,29 @@ async def stats(update: Update, context: CallbackContext):
 
 async def short(update: Update, context: CallbackContext):
     await reply_html(update, context, "short")
+
+    await update.message.reply_text("Viel Spaß mit der crappy Website xddd", reply_markup=ReplyKeyboardMarkup([
+        [KeyboardButton("Öffne mich hart!", web_app=WebAppInfo("https://4142-91-33-115-20.ngrok-free.app"))]
+    ], resize_keyboard=True, one_time_keyboard=True))
+
+
+async def inline_query(update: Update, context: CallbackContext):
+    query = update.inline_query.query
+    if not query:
+        return
+
+    await update.inline_query.answer(button=InlineQueryResultsButton("open app", WebAppInfo("https://4142-91-33-115-20.ngrok-free.app")),
+
+ results=[  InlineQueryResultArticle(
+      id=str(uuid4()),
+       title="short",
+            input_message_content=InputTextMessageContent("hi"),
+     #  url="https://4142-91-33-115-20.ngrok-free.app",
+
+      #  hide_url=True
+   )]
+
+    )
 
 
 async def donbass(update: Update, context: CallbackContext):
@@ -109,6 +135,7 @@ async def mimimi(update: Update, context: CallbackContext):
 
 async def cia(update: Update, context: CallbackContext):
     await reply_photo(update, context, "cia.jpg")
+
 
 async def start(update: Update, context: CallbackContext):
     await reply_html_greet(update, context, "start")

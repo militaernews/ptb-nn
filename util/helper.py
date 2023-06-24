@@ -94,7 +94,7 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
 
     if caption is not None:
         try:
-            get_text(update, caption)
+            caption= get_text(update, caption)
         except Exception as e:
             await context.bot.send_message(
                 LOG_GROUP,

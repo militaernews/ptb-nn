@@ -3,4 +3,4 @@ from data.db import get_footer_by_channel_id
 
 FOOTER_MEME = get_footer_by_channel_id(NX_MEME)
 FOOTER_UA_RU = get_footer_by_channel_id(CHANNEL_UA_RU)
-FOOTER = '\n―――――――――――――\n<b>Verpasse nichts zum Ukrainekrieg mit unserem Newsticker!</b>!\n👉 https://t.me/+tUVB94nMmH85NmQy'
+FOOTER = '\n――――――――――――\n\n<b>Verpasse nichts zum Ukrainekrieg mit unserem Newsticker!</b>!\n👉 https://t.me/+tUVB94nMmH85NmQy'

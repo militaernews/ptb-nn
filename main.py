@@ -5,7 +5,7 @@ from warnings import filterwarnings
 
 from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
-    ChatJoinRequestHandler
+    ChatJoinRequestHandler, InlineQueryHandler
 from telegram.warnings import PTBUserWarning
 
 import config
@@ -18,7 +18,7 @@ from constant import FOOTER_MEME
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
-    mimimi, sofa, bot, start
+    mimimi, sofa, bot, start, inline_query
 from group.dictionary import handle_other_chats
 from group.youtubedownload import get_youtube_video, YT_PATTERN
 from private.join_request import join_request_buttons
@@ -43,24 +43,26 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM).defaults(
         Defaults(parse_mode=ParseMode.HTML, disable_web_page_preview=True)) \
         .persistence(PicklePersistence(filepath="persistence")) \
-        .read_timeout(15).get_updates_read_timeout(50)\
+        .read_timeout(15).get_updates_read_timeout(50) \
         .build()
 
     app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
 
-    filter_media =(filters.PHOTO | filters.VIDEO | filters.ANIMATION)
+    filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
 
-    filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME)  & ~filters.FORWARDED
+    filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & ~filters.FORWARDED
     app.add_handler(
-        MessageHandler(filter_meme & filter_media &~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
-    app.add_handler(MessageHandler(filter_meme & filters.TEXT &~filters.Regex(FOOTER_MEME), post_text_meme_nx))
+        MessageHandler(filter_meme & filter_media & ~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
+    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_ru_ua & filter_media &  ~filters.CaptionRegex(FOOTER_UA_RU), append_footer))
+    app.add_handler(MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU) , append_footer))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
     app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
+
+    app.add_handler(InlineQueryHandler(inline_query))
 
     app.add_handler(CommandHandler("maps", maps))
     app.add_handler(CommandHandler("donbass", donbass))
