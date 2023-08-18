@@ -18,8 +18,9 @@ from constant import FOOTER_MEME
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
-    mimimi, sofa, bot, start, inline_query
+    mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user
 from group.dictionary import handle_other_chats
+from group.inline import handle_inline
 from group.youtubedownload import get_youtube_video, YT_PATTERN
 from private.join_request import join_request_buttons
 from private.pattern import add_pattern_handler
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU) , append_footer))
+    app.add_handler(MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
@@ -92,13 +93,15 @@ if __name__ == "__main__":
 
     app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUPS) & filters.Regex("^@admin"), admin))
 
-    app.add_handler(MessageHandler(filters.Regex(YT_PATTERN) & ~filters.ChatType.CHANNEL, get_youtube_video))
+    #  app.add_handler(MessageHandler(filters.Regex(YT_PATTERN) & ~filters.ChatType.CHANNEL, get_youtube_video))
 
     app.add_handler(CommandHandler("bingo", bingo_field, filters.User(ADMINS)))
     app.add_handler(CommandHandler("reset_bingo", reset_bingo, filters.Chat(ADMINS)))
     app.add_handler(
         MessageHandler(filters.TEXT & filters.ChatType.GROUPS & ~filters.User(ADMINS) & ~filters.IS_AUTOMATIC_FORWARD,
                        handle_other_chats))
+    app.add_handler(CommandHandler("warn", warn_user ))
+    app.add_handler(CommandHandler("unwarn", unwarn_user))
 
     print("### Run Local ###")
     app.run_polling()

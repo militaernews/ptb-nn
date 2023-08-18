@@ -1,9 +1,11 @@
+import logging
 from uuid import uuid4
 
 from telegram import Update, BotCommandScopeChat, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton, \
     InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
+from telegram.helpers import mention_html
 
 import config
 from util.helper import reply_html, reply_photo, reply_html_greet
@@ -27,6 +29,8 @@ async def setup(update: Update, context: CallbackContext):
         ("add_source", "Quelle hinzufügen"),
         ("edit_source", "Quelle bearbeiten"),
         ("add_pattern", "Zu entfernenden Footer hinzufügen"),
+        ("warn", "Nutzer verwarnen"),
+        ("unwarn", "Verwarnung zurückziehen"),
     ]
     for chat_id in config.ADMINS:
         try:
@@ -62,22 +66,41 @@ async def inline_query(update: Update, context: CallbackContext):
     if not query:
         return
 
-    await update.inline_query.answer(button=InlineQueryResultsButton("open app", WebAppInfo("https://4142-91-33-115-20.ngrok-free.app")),
+    await update.inline_query.answer(
+        button=InlineQueryResultsButton("open app", WebAppInfo("https://4142-91-33-115-20.ngrok-free.app")),
 
- results=[  InlineQueryResultArticle(
-      id=str(uuid4()),
-       title="short",
+        results=[InlineQueryResultArticle(
+            id=str(uuid4()),
+            title="short",
             input_message_content=InputTextMessageContent("hi"),
-     #  url="https://4142-91-33-115-20.ngrok-free.app",
+            #  url="https://4142-91-33-115-20.ngrok-free.app",
 
-      #  hide_url=True
-   )]
+            #  hide_url=True
+        ),
+            InlineQueryResultArticle(
+                id=str(uuid4()),
+                title="map",
+                input_message_content=InputTextMessageContent("hi"),
+                url="https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18",
+
+                #  hide_url=True
+            ),
+            InlineQueryResultArticle(
+                id=str(uuid4()),
+                title="mapthumb",
+                input_message_content=InputTextMessageContent("hi"),
+                thumbnail_url="https://telegra.ph/file/87aa41b45b907a5135052.png",
+                url="https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18",
+
+                #  hide_url=True
+            )
+        ]
 
     )
 
 
 async def donbass(update: Update, context: CallbackContext):
-    await reply_html(update, context, "donbass.html")
+    await reply_html(update, context, "donbass")
 
 
 async def channels(update: Update, context: CallbackContext):
@@ -139,3 +162,57 @@ async def cia(update: Update, context: CallbackContext):
 
 async def start(update: Update, context: CallbackContext):
     await reply_html_greet(update, context, "start")
+
+
+async def unwarn_user(update: Update, context: CallbackContext):
+    await update.message.delete()
+
+    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+        logging.info(f"unwarning {update.message.reply_to_message.from_user.id} !!")
+        if "users" not in context.bot_data or update.message.reply_to_message.from_user.id not in context.bot_data[
+            "users"] or "warn" not in context.bot_data["users"][update.message.reply_to_message.from_user.id]:
+            warnings = 0
+            context.bot_data["users"] = {update.message.reply_to_message.from_user.id: {"warn": warnings}}
+
+        else:
+            warnings = context.bot_data["users"][update.message.reply_to_message.from_user.id]["warn"]
+
+            if warnings != 0:
+                warnings = warnings - 1
+
+            context.bot_data["users"][update.message.reply_to_message.from_user.id]["warn"] = warnings
+
+            await update.message.reply_to_message.reply_text(
+                f"Dem Nutzer {mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)} wurde eine Warnung erlassen, womit er nur noch {warnings} von 3 hat.")
+
+
+async def warn_user(update: Update, context: CallbackContext):
+    await update.message.delete()
+
+    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+        logging.info(f"warning {update.message.reply_to_message.from_user.id} !!")
+        if "users" not in context.bot_data or update.message.reply_to_message.from_user.id not in context.bot_data[
+            "users"] or "warn" not in context.bot_data["users"][update.message.reply_to_message.from_user.id]:
+            warnings = 1
+            context.bot_data["users"] = {update.message.reply_to_message.from_user.id: {"warn": warnings}}
+
+        else:
+            warnings = context.bot_data["users"][update.message.reply_to_message.from_user.id]["warn"]
+            if warnings == 3:
+                logging.info(f"banning {update.message.reply_to_message.from_user.id} !!")
+                await context.bot.ban_chat_member(update.message.reply_to_message.chat_id,
+                                                  update.message.reply_to_message.from_user.id, until_date=1)
+                await update.message.reply_to_message.reply_text(
+                    f"Aufgrund wiederholter Verstöße habe ich {mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)} gebannt.")
+                return
+            else:
+                warnings = warnings + 1
+                context.bot_data["users"][update.message.reply_to_message.from_user.id]["warn"] = warnings
+
+        warn_Text = f"Der Nutzer{mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)} hat die Warnung {warnings} von 3 erhalten."
+        if len(context.args) != 0:
+            warn_text = f"{warn_Text}\n\nGrund: {' '.join(context.args)}"
+        else:
+            warn_text = f"Hey! Das musste jetzt echt nicht sein. Bitte verhalte dich besser!\n\n{warn_Text}"
+
+        await update.message.reply_to_message.reply_text(warn_text)
