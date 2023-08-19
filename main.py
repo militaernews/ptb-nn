@@ -5,7 +5,7 @@ from warnings import filterwarnings
 
 from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
-    ChatJoinRequestHandler, InlineQueryHandler
+    ChatJoinRequestHandler, InlineQueryHandler, CallbackQueryHandler
 from telegram.warnings import PTBUserWarning
 
 import config
@@ -22,7 +22,7 @@ from group.command import donbass, maps, loss, peace, genozid, stats, setup, sup
 from group.dictionary import handle_other_chats
 from group.inline import handle_inline
 from group.youtubedownload import get_youtube_video, YT_PATTERN
-from private.join_request import join_request_buttons
+from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug
 from private.pattern import add_pattern_handler
 from private.source.add import add_source_handler
 from private.source.edit import edit_source_handler
@@ -48,6 +48,8 @@ if __name__ == "__main__":
         .build()
 
     app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
+    app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=config.UG_LZ, block=False))
+    app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ug_\d+"))
 
     filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
 
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     app.add_handler(
         MessageHandler(filters.TEXT & filters.ChatType.GROUPS & ~filters.User(ADMINS) & ~filters.IS_AUTOMATIC_FORWARD,
                        handle_other_chats))
-    app.add_handler(CommandHandler("warn", warn_user ))
+    app.add_handler(CommandHandler("warn", warn_user))
     app.add_handler(CommandHandler("unwarn", unwarn_user))
 
     print("### Run Local ###")
