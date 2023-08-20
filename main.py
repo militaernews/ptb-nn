@@ -22,7 +22,8 @@ from group.command import donbass, maps, loss, peace, genozid, stats, setup, sup
 from group.dictionary import handle_other_chats
 from group.inline import handle_inline
 from group.youtubedownload import get_youtube_video, YT_PATTERN
-from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug
+from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
+    accept_request_ug
 from private.pattern import add_pattern_handler
 from private.source.add import add_source_handler
 from private.source.edit import edit_source_handler
@@ -49,7 +50,9 @@ if __name__ == "__main__":
 
     app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
     app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=config.UG_LZ, block=False))
-    app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ug_\d+"))
+    app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ugreq_\d+"))
+    app.add_handler(CallbackQueryHandler(accept_request_ug, r"ugyes_\d+_\d+"))
+    app.add_handler(CallbackQueryHandler(decline_request_ug, r"ugno_\d+_\d+"))
 
     filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
 

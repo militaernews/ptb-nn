@@ -52,21 +52,70 @@ async def accept_join_request(update: Update, context: CallbackContext):
 async def join_request_ug(update: Update, context: CallbackContext):
     await context.bot.send_message(update.chat_join_request.from_user.id,
                                    f"Hey, {update.chat_join_request.from_user.name} ✌️\n\n"
-                                   f"Damit im Lagezentrum von @ukr_ger eine angenhme Atmosphäre bleibt gilt es folgende Regeln zu beachten:\n\n"
-                                   f"— Beiträge im entsprechenden Thema, bpsw. passsend zur Region, senden\n\n"
+                                   f"Damit im Lagezentrum von @ukr_ger eine angenehme Atmosphäre bleibt gilt es folgende Regeln zu beachten:\n\n"
+                                   f"— Beiträge im entsprechenden Thema, bspw. passend zur Region, senden\n\n"
                                    f"— Respektvoller Umgang mit anderen Mitgliedern\n\n"
                                    f"— Wer behauptet, der belegt bei Nachfrage\n\n"
-                                   , reply_markup=InlineKeyboardMarkup([[
+                                   , reply_markup=InlineKeyboardMarkup.from_button(
             InlineKeyboardButton("Gruppe beitreten ➡️",
                                  callback_data=f"ugreq_{update.chat_join_request.from_user.id}_{update.chat_join_request.from_user.name}")
-        ]]))
+        ))
 
 
 async def accept_rules_ug(update: Update, context: CallbackContext):
     user_id, name = update.callback_query.data.split("_")[1:]
 
     await context.bot.send_message(config.UG_ADMIN,
-                                   f"Beitrittsanfrage von {mention_html(user_id, name)}!"
-                                   , reply_markup=InlineKeyboardMarkup([[
-            InlineKeyboardButton("Zulassen ✅", callback_data=f"join_{user_id}")
-        ], ]))
+                                   f"Beitrittsanfrage von {mention_html(user_id, name)}",
+                                   reply_markup=InlineKeyboardMarkup([[
+                                       InlineKeyboardButton("Zulassen ✅",
+                                                            callback_data=f"ugyes_{user_id}_{update.callback_query.message.id}"),
+                                       InlineKeyboardButton("Ablehnen❌",
+                                                            callback_data=f"ugno_{user_id}_{update.callback_query.message.id}")
+                                   ], ]))
+    await update.callback_query.answer()
+
+
+async def decline_request_ug(update: Update, context: CallbackContext):
+    user_id, msg_id = update.callback_query.data.split("_")[1:]
+
+    try:
+        await context.bot.decline_chat_join_request(config.UG_LZ, int(user_id))
+    except Exception as e:
+        logging.error(e)
+        pass
+
+    try:
+        await context.bot.delete_message(int(user_id), int(msg_id))
+
+        await update.callback_query.message.delete()
+    except Exception as e:
+        logging.error(e)
+        pass
+
+
+async def accept_request_ug(update: Update, context: CallbackContext):
+    user_id, msg_id = update.callback_query.data.split("_")[1:]
+    print(update.callback_query)
+
+    try:
+        await context.bot.approve_chat_join_request(config.UG_LZ, int(user_id))
+    except Exception as e:
+        logging.error(e)
+        pass
+
+    try:
+
+        await context.bot.delete_message(int(user_id), int(msg_id))
+
+        await context.bot.send_message(int(user_id),
+                                       "Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n"
+                                       "🚨 Vielleicht gefällt dir auch Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
+                                       reply_markup=InlineKeyboardMarkup.from_button(
+                                           InlineKeyboardButton("Kanal beitreten ✅",
+                                                                url=f"https://t.me/nyx_news_ua")))
+
+        await update.callback_query.message.delete()
+    except Exception as e:
+        logging.error(e)
+        pass
