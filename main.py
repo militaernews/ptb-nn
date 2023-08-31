@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
-    app.add_handler(MessageHandler(filters.Chat(chat_id=config.GROUPS) & filters.Regex("^@admin"), admin))
+    app.add_handler(MessageHandler(filters.Chat(chat_id=config.ADMIN_GROUPS.keys()) & filters.Regex("^@admin"), admin))
 
     #  app.add_handler(MessageHandler(filters.Regex(YT_PATTERN) & ~filters.ChatType.CHANNEL, get_youtube_video))
 

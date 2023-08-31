@@ -28,7 +28,7 @@ def get_text2(from_user: User, filename: str) -> str:
         return f.read()
 
 
-def get_text(update: Update, filename: str)->str:
+def get_text(update: Update, filename: str) -> str:
     return get_text2(update.message.from_user, filename)
 
 
@@ -65,6 +65,8 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
 
         text = f'{get_text(update, file_name)}\n{FOOTER}'
 
+        print(text)
+
         if update.message.reply_to_message is not None:
             if update.message.reply_to_message.from_user.first_name == "Telegram":
 
@@ -72,9 +74,9 @@ async def reply_html(update: Update, context: CallbackContext, file_name: str):
             else:
                 msg = await update.message.reply_text(text)
         else:
-            msg = await context.bot.send_message(update.message.chat_id, text)
+            msg = await context.bot.send_message(update.message.chat.id, text)
 
-        context.job_queue.run_once(delete, MSG_REMOVAL_PERIOD, {CHAT_ID: msg.chat_id, MSG_ID: msg.message_id})
+        context.job_queue.run_once(delete, MSG_REMOVAL_PERIOD, {CHAT_ID: msg.chat.id, MSG_ID: msg.message_id})
 
     except Exception as e:
         await context.bot.send_message(
@@ -94,7 +96,7 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
 
     if caption is not None:
         try:
-            caption= get_text(update, caption)
+            caption = get_text(update, caption)
         except Exception as e:
             await context.bot.send_message(
                 LOG_GROUP,

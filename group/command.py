@@ -130,7 +130,8 @@ async def admin(update: Update, context: CallbackContext):
             response = "Danke für deine Meldung, wir Admins prüfen das 😊"
         else:
             text = f"‼️ <a href='{update.message.reply_to_message.link}'>Nachricht</a> des Nutzers {update.message.reply_to_message.from_user.mention_html()}"
-            response = "Ein Nutzer hat deine Nachricht gemeldet. Wir Admins prüfen das. Bitte beachte, dass diese Gruppe eigentlich nicht zu chatten gedacht ist."
+            response = "Ein Nutzer hat deine Nachricht gemeldet. Wir Admins prüfen das."
+
 
         text += f" gemeldet von {update.message.from_user.mention_html()}:\n\n"
 
@@ -139,7 +140,13 @@ async def admin(update: Update, context: CallbackContext):
         else:
             text += update.message.reply_to_message.text_html_urled
 
-        await context.bot.send_message(config.ADMIN_GROUP, text, message_thread_id=206)
+        target_group = config.ADMIN_GROUPS[update.message.chat_id]
+        thread_id = None
+        if target_group == config.ADMIN_GROUP:
+            thread_id=206
+            response+= "\n\nBitte beachte, dass diese Gruppe eigentlich nicht zu chatten gedacht ist."
+
+        await context.bot.send_message(target_group, text, message_thread_id=thread_id)
 
         await update.message.reply_to_message.reply_text(response)
 

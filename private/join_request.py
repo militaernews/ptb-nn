@@ -73,7 +73,15 @@ async def accept_rules_ug(update: Update, context: CallbackContext):
                                        InlineKeyboardButton("Ablehnen❌",
                                                             callback_data=f"ugno_{user_id}_{update.callback_query.message.id}")
                                    ], ]))
-    await update.callback_query.answer()
+
+    try:
+        await update.callback_query.edit_message_text(f"{update.callback_query.message.text}\n\n"
+                                                      f"✅ <b>Anfrage gesendet. Die Admins überprüfen dein Profil.</b>",
+                                                      reply_markup=None)
+    except Exception as e:
+        logging.error(e)
+        pass
+
 
 
 async def decline_request_ug(update: Update, context: CallbackContext):
@@ -96,7 +104,7 @@ async def decline_request_ug(update: Update, context: CallbackContext):
 
 async def accept_request_ug(update: Update, context: CallbackContext):
     user_id, msg_id = update.callback_query.data.split("_")[1:]
-    print(update.callback_query)
+    logging.info(update.callback_query)
 
     try:
         await context.bot.approve_chat_join_request(config.UG_LZ, int(user_id))
@@ -108,9 +116,10 @@ async def accept_request_ug(update: Update, context: CallbackContext):
 
         await context.bot.delete_message(int(user_id), int(msg_id))
 
-        await context.bot.send_message(int(user_id),
-                                       "Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n"
-                                       "🚨 Vielleicht gefällt dir auch Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
+        await context.bot.send_photo(int(user_id),
+                                     open("res/img/nn_info.jpg", "rb"),
+                                      caption= "Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n"
+                                       "🚨 Vielleicht gefällt dir auch <b>@nyx_news_ua</b> — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
                                        reply_markup=InlineKeyboardMarkup.from_button(
                                            InlineKeyboardButton("Kanal beitreten ✅",
                                                                 url=f"https://t.me/nyx_news_ua")))
