@@ -9,18 +9,18 @@ from constant import FOOTER_UA_RU
 
 
 async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):
-    print(f"append footer text :: {update}")
+    logging.info(f"append footer text :: {update}")
 
     text = update.channel_post.text_html_urled
 
-    if len(re.findall(FOOTER_UA_RU,text)) != 0:
+    if len(re.findall(FOOTER_UA_RU, text)) != 0:
         return
 
     await update.channel_post.edit_text(text + FOOTER_UA_RU, disable_web_page_preview=False)
 
 
 async def append_footer(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(f"append footer :: {update}")
+    logging.info(f"append footer :: {update}")
 
     original_caption = update.channel_post.caption_html_urled
 
@@ -62,7 +62,7 @@ async def append_footer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def append_footer_mg(context: CallbackContext):
-    print(f"append_footer_mg :: {context}")
+    logging.info(f"append_footer_mg :: {context}")
 
     logging.info("job-data", context.job.data)
     posts = sorted(context.job.data["ids"])

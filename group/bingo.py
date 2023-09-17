@@ -301,6 +301,8 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
 
 
 async def handle_bingo(update: Update, context: CallbackContext):
+    print(f"bingo check !! {update}")
+
     text = update.message.text.lower()
 
     # elif datetime.datetime.now().weekday() == 5 or datetime.datetime.now().weekday() == 6:

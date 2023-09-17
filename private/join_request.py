@@ -83,7 +83,6 @@ async def accept_rules_ug(update: Update, context: CallbackContext):
         pass
 
 
-
 async def decline_request_ug(update: Update, context: CallbackContext):
     user_id, msg_id = update.callback_query.data.split("_")[1:]
 
@@ -118,11 +117,11 @@ async def accept_request_ug(update: Update, context: CallbackContext):
 
         await context.bot.send_photo(int(user_id),
                                      open("res/img/nn_info.jpg", "rb"),
-                                      caption= "Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n"
-                                       "🚨 Vielleicht gefällt dir auch <b>@nyx_news_ua</b> — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
-                                       reply_markup=InlineKeyboardMarkup.from_button(
-                                           InlineKeyboardButton("Kanal beitreten ✅",
-                                                                url=f"https://t.me/nyx_news_ua")))
+                                     caption="Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n"
+                                             "🚨 Vielleicht gefällt dir auch <b>@nyx_news_ua</b> — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
+                                     reply_markup=InlineKeyboardMarkup.from_button(
+                                         InlineKeyboardButton("Kanal beitreten ✅",
+                                                              url=f"https://t.me/nyx_news_ua")))
 
         await update.callback_query.message.delete()
     except Exception as e:

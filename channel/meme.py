@@ -1,3 +1,5 @@
+import logging
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
@@ -38,7 +40,7 @@ async def add_footer_meme(update: Update, context: CallbackContext):
     #   await update.channel_post.forward(chat_id=NX_MAIN)
     # await update.channel_post.forward(chat_id=-1001618190222)
     except Exception as e:
-        print(f"Error when posting media: {e}")
+        logging.error(f"Error when posting media: {e}")
 
 
 async def remove_media_group_id(context: CallbackContext):
@@ -55,7 +57,7 @@ async def post_text_meme_nx(update: Update, context: CallbackContext):
     #  await update.channel_post.forward(chat_id=-1001618190222)
 
     except Exception as e:
-        print(f"Error when posting text: {e}")
+        logging.error(f"Error when posting text: {e}")
 
 
 def format_meme_footer(original_text: str) -> str:

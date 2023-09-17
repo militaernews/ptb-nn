@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from warnings import filterwarnings
 
 from telegram.constants import ParseMode
@@ -9,7 +9,7 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
 from telegram.warnings import PTBUserWarning
 
 import config
-from channel.crawl_loss_api import setup_crawl
+from channel.crawl_loss_api import get_api
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from channel.ukraine_russia import append_footer, append_footer_text, FOOTER_UA_RU
@@ -20,8 +20,6 @@ from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
     mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user
 from group.dictionary import handle_other_chats
-from group.inline import handle_inline
-from group.youtubedownload import get_youtube_video, YT_PATTERN
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
 from private.pattern import add_pattern_handler
@@ -86,7 +84,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("cia", cia))
 
     app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
-    app.add_handler(CommandHandler("crawl", setup_crawl, filters.Chat(ADMINS)))
 
     app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
 
@@ -103,10 +100,13 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("bingo", bingo_field, filters.User(ADMINS)))
     app.add_handler(CommandHandler("reset_bingo", reset_bingo, filters.Chat(ADMINS)))
     app.add_handler(
-        MessageHandler(filters.TEXT & filters.ChatType.GROUPS & ~filters.User(ADMINS) & ~filters.IS_AUTOMATIC_FORWARD,
+        MessageHandler(filters.TEXT & filters.ChatType.GROUPS & ~filters.User(
+            ADMINS) & ~filters.IS_AUTOMATIC_FORWARD & filters.UpdateType.MESSAGE,
                        handle_other_chats))
     app.add_handler(CommandHandler("warn", warn_user))
     app.add_handler(CommandHandler("unwarn", unwarn_user))
+
+    app.job_queue.run_repeating(get_api, timedelta(hours=0.5))
 
     print("### Run Local ###")
     app.run_polling()

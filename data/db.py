@@ -18,7 +18,7 @@ def get_source(channel_id: int) -> Optional[Source]:
         c.execute("select * from sources where channel_id = %s;",
                   [channel_id])
         res: Source = c.fetchone()
-        print(res)
+        logging.info(res)
 
         return res
 
@@ -27,7 +27,7 @@ def get_destination_ids() -> [int]:
     with conn.cursor() as c:
         c.execute("select channel_id from destinations;")
         res: [int] = [item.channel_id for item in c.fetchall()]
-        print(f"destination ids: {res}")
+        logging.info(f"destination ids: {res}")
 
         return res
 
@@ -82,7 +82,7 @@ def get_destinations() -> Dict[int, str]:
         for d in dests:
             res[d.channel_id] = d.name
 
-        print(res)
+        logging.info(res)
 
         return res
 
@@ -97,7 +97,7 @@ def get_accounts() -> Dict[int, str]:
         for a in accs:
             res[a.api_id] = a.name
 
-        print(res)
+        logging.info(res)
 
         return res
 
@@ -120,6 +120,6 @@ def get_footer_by_channel_id(channel_id: int) -> str:
     with conn.cursor() as c:
         c.execute("select footer from destinations where channel_id = %s;", [channel_id])
         res = c.fetchone()[0]
-        print(f"{channel_id} - footer: {res}")
+        logging.info(f"{channel_id} - footer: {res}")
 
         return res

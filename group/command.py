@@ -120,7 +120,7 @@ async def support(update: Update, context: CallbackContext):
 
 
 async def admin(update: Update, context: CallbackContext):
-    print("update", update.message)
+    logging.info("update", update.message)
 
     await update.message.delete()
 
@@ -132,7 +132,6 @@ async def admin(update: Update, context: CallbackContext):
             text = f"‼️ <a href='{update.message.reply_to_message.link}'>Nachricht</a> des Nutzers {update.message.reply_to_message.from_user.mention_html()}"
             response = "Ein Nutzer hat deine Nachricht gemeldet. Wir Admins prüfen das."
 
-
         text += f" gemeldet von {update.message.from_user.mention_html()}:\n\n"
 
         if update.message.reply_to_message.caption is not None:
@@ -143,8 +142,8 @@ async def admin(update: Update, context: CallbackContext):
         target_group = config.ADMIN_GROUPS[update.message.chat_id]
         thread_id = None
         if target_group == config.ADMIN_GROUP:
-            thread_id=206
-            response+= "\n\nBitte beachte, dass diese Gruppe eigentlich nicht zu chatten gedacht ist."
+            thread_id = 206
+            response += "\n\nBitte beachte, dass diese Gruppe eigentlich nicht zu chatten gedacht ist."
 
         await context.bot.send_message(target_group, text, message_thread_id=thread_id)
 
@@ -216,7 +215,7 @@ async def warn_user(update: Update, context: CallbackContext):
                 warnings = warnings + 1
                 context.bot_data["users"][update.message.reply_to_message.from_user.id]["warn"] = warnings
 
-        warn_Text = f"Der Nutzer{mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)} hat die Warnung {warnings} von 3 erhalten."
+        warn_Text = f"Der Nutzer {mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)} hat die Warnung {warnings} von 3 erhalten."
         if len(context.args) != 0:
             warn_text = f"{warn_Text}\n\nGrund: {' '.join(context.args)}"
         else:

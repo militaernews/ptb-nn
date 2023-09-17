@@ -14,7 +14,7 @@ from telegram.ext import ContextTypes
 from config import CHANNEL_UA_RU
 from constant import FOOTER_UA_RU
 
-PATTERN_TWITTER = re.compile(r"(https*://twitter.com/\S+/status/\d+)")
+PATTERN_TWITTER = re.compile(r"(https*://(?:twitter|x)\.com/\S+/status/\d+)")
 
 service = Service("tools/chromedriver.exe")
 chrome_options = Options()

@@ -1,28 +1,21 @@
-import asyncio
 import re
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from datetime import datetime
-from functools import partial
 
 import yt_dlp
-from pytube import YouTube
 from telegram import Update, Message
 from telegram.ext import CallbackContext
 
 YT_PATTERN = re.compile(
     r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu\.be))(\/(?:[\w\-]+\?v=|embed\/|shorts\/|v\/)?)([\w\-]+)(?:\S+)?")
 
-import youtube_dl
-from youtube_dl import YoutubeDL as YDL
-
 PPE = ProcessPoolExecutor()
 
 
-#class MyCustomPP(yt_dlp.postprocessor.PostProcessor):
-  #  def run(self, info):
-   #     self.to_screen('Doing stuff')
-    #    return [], info
+# class MyCustomPP(yt_dlp.postprocessor.PostProcessor):
+#  def run(self, info):
+#     self.to_screen('Doing stuff')
+#    return [], info
 
 
 async def my_hook(d, msg: Message, update: Update):
@@ -64,5 +57,5 @@ async def get_youtube_video(update: Update, context: CallbackContext):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-     #   ydl.add_post_processor(MyCustomPP(), when='pre_process')
+        #   ydl.add_post_processor(MyCustomPP(), when='pre_process')
         ydl.download([''.join(video_url)])

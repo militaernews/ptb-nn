@@ -8,23 +8,22 @@ from typing import Dict
 import cairosvg
 import httpx
 from telegram import Update
-from telegram.ext import ContextTypes, CallbackContext
+from telegram.ext import ContextTypes
 
 import config
 import constant
-from constant import FOOTER
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
     'apv': "Gepanzerte Fahrzeuge",
-    'artillery': "Artilleriesysteme",
+    'artillery': "Artillerie",
     'mlrs': "Mehrfachraketenwerfer",
-    'aaws': "Luftverteidigungssysteme",
+    'aaws': "Flugabwehr",
     'aircraft': "Flugzeuge",
     'helicopters': "Hubschrauber",
     'uav': "Drohnen",
     'vehicles': "Lastkraftwagen",
-    'boats': "Schiffe",
+    'boats': "Marine",
     'se': "Spezialausrüstung",
     'missiles': "Marschflugkörper",
     'personnel': "Getötetes Personal",
@@ -111,7 +110,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             font-family="Bahnschrift">Russische Verluste in der Ukraine - {day}</text>
     """
 
-    print("------")
+    logging.info("------")
 
     for y, item in enumerate(items):
         logging.info(f"items :: {item}")
@@ -166,16 +165,16 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     
 </svg>"""
 
-    print(svg)
+    logging.info(svg)
 
     cairosvg.svg2png(bytestring=svg, write_to='loss.png', background_color=background_color)
 
 
-async def get_api(context: CallbackContext):
-    print("get api")
+async def get_api(context: ContextTypes.DEFAULT_TYPE):
+    logging.info("get api")
     key = context.bot_data.get("last_loss", "")
     now = get_time()
-    print("crawl: ", key, now)
+    logging.info("crawl: ", key, now)
 
     logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
 
@@ -188,10 +187,17 @@ async def get_api(context: CallbackContext):
 
         try:
             new_losses = data[now]
+            if "submarines" in new_losses:
+                if "boats" in new_losses:
+                    exist = new_losses["boats"]
+                else:
+                    exist = 0
+                new_losses["boats"] = new_losses["submarines"] + exist
+                new_losses.pop("submarines")
         # new_losses.pop("captive")
 
         except KeyError as e:
-            print("Could not get entry with key: ", e)
+            logging.error(f"Could not get entry with key: {e}")
             return
 
         total_losses = {
@@ -217,13 +223,13 @@ async def get_api(context: CallbackContext):
             'apv': [],
             'artillery': [],
             'mlrs': [],
-            'aaws':[],
+            'aaws': [],
             'aircraft': [],
-            'helicopters':[],
-            'vehicles':[],
+            'helicopters': [],
+            'vehicles': [],
             'boats': [],
             'se': [],
-            'uav':[],
+            'uav': [],
             'missiles': [],
         }
 
@@ -233,10 +239,15 @@ async def get_api(context: CallbackContext):
             for k, v in item.items():
                 #   print(k, v)
 
+                if k == "submarines":
+                    total_losses["boats"] = total_losses["boats"] + v
+                    median_losses["boats"].append(v)
+                    continue
+
                 if k != "captive":
                     total_losses[k] = total_losses[k] + v
 
-                    if k!="presidents":
+                    if k != "presidents":
                         median_losses[k].append(v)
 
         print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
@@ -246,7 +257,7 @@ async def get_api(context: CallbackContext):
 
         create_svg(total_losses, new_losses, display_date)
 
-        text = f"🔥 <b>Russische Verluste bis zum {display_date} (Tag {days})</b>"
+        text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
         for k, v in total_losses.items():
             if k != "presidents" and new_losses[k] != 0:
                 daily = round(v / days, 1)
@@ -274,10 +285,10 @@ async def get_api(context: CallbackContext):
 
 
 async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("setup crawl")
+    logging.info("setup crawl")
     #  context.bot_data.pop("last_loss", "")
     #    context.bot_data.pop("last_loss_id", 18147)
     await get_api(context)
-    print("help?")
+    logging.info("help?")
     context.job_queue.run_repeating(get_api, datetime.timedelta(hours=1.5))
     await update.message.reply_text("Scheduled Api Crawler.")
