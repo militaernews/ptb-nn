@@ -19,7 +19,7 @@ async def join_request_buttons(update: Update, context: CallbackContext):
         await context.bot.approve_chat_join_request(update.chat_join_request.chat.id, update.effective_user.id)
 
         await update.chat_join_request.from_user.send_photo(
-            open("res/nn_info.jpg", "rb"),
+            open("res/img/nn_info.jpg", "rb"),
             caption=(
                 f"Herzlich Willkommen, {update.chat_join_request.from_user.name} ✌🏼\n\n{get_text2(update.chat_join_request.from_user, 'how')}"),
             reply_markup=InlineKeyboardMarkup.from_button(
