@@ -6,7 +6,6 @@ from pathlib import Path
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -16,10 +15,9 @@ from constant import FOOTER_UA_RU
 
 PATTERN_TWITTER = re.compile(r"(https*://(?:twitter|x)\.com/\S+/status/\d+)")
 
-service = Service("tools/chromedriver.exe")
 chrome_options = Options()
 chrome_options.add_argument("--headless")
-driver = webdriver.Chrome(service=service, options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 
 
 async def get_screenshot(url: str, screenshot_path: str):

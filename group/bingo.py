@@ -5,7 +5,7 @@ import re
 from typing import List, Union, Dict
 
 import cairosvg
-import numpy as numpy
+import numpy
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import CallbackContext

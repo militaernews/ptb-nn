@@ -9,7 +9,7 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
 from telegram.warnings import PTBUserWarning
 
 import config
-from channel.crawl_loss_api import get_api
+from channel.crawl_loss_api import get_api, setup_crawl
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from channel.ukraine_russia import append_footer, append_footer_text, FOOTER_UA_RU
@@ -106,6 +106,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("warn", warn_user))
     app.add_handler(CommandHandler("unwarn", unwarn_user))
 
+    app.add_handler(CommandHandler("crawl", setup_crawl))
     app.job_queue.run_repeating(get_api, timedelta(hours=0.5))
 
     print("### Run Local ###")
