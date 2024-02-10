@@ -110,4 +110,4 @@ if __name__ == "__main__":
     app.job_queue.run_repeating(get_api, timedelta(hours=0.5))
 
     print("### Run Local ###")
-    app.run_polling()
+    app.run_polling(poll_interval=1)
