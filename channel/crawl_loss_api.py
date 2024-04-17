@@ -5,8 +5,8 @@ from itertools import islice
 from statistics import median
 from typing import Dict
 
-import cairosvg
 import httpx
+import pyvips
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -33,7 +33,7 @@ LOSS_DESCRIPTIONS = {
 LOSS_STOCKPILE = {
     'tanks': 8168,
     'apv': 26993,
-    'artillery': 10991,
+    'artillery': 18007,
     'mlrs': 4300,
     'aaws': 3422,
     'aircraft': 1551,
@@ -79,17 +79,17 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     all_height = row_count * (margin + height_cell) + heading_space
 
     new_color = "#e8cc00"
-    heading_color = "white"
-    loss_color = "white"
-    description_color = "white"
-    background_color = "black"
+    heading_color = "#ffffff"
+    loss_color = "#ffffff"
+    description_color = "#ffffff"
+    background_color = "#000000"
 
     svg = f"""<?xml version='1.0' encoding='UTF-8' standalone='no'?>
     <svg
        width='{all_width}'
        height='{all_height}'
        viewBox='0 0 {all_width} {all_height}'
-       version='1.1'
+       version='1.1'      
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
        <defs>
@@ -101,6 +101,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
     </linearGradient>
   </defs>
+    <rect width="100%" height="100%"   fill='{background_color}'/>
         <text
             x="50%"
             y="{heading_size + margin}"
@@ -167,7 +168,11 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
     logging.info(svg)
 
-    cairosvg.svg2png(bytestring=svg, write_to='loss.png', background_color=background_color)
+    with open("loss.svg", "w", encoding="UTF-8") as f:
+            f.write(svg)
+    image = pyvips.Image.new_from_file("loss.svg", dpi=100)
+    image.write_to_file('loss.png')
+
 
 
 async def get_api(context: ContextTypes.DEFAULT_TYPE):

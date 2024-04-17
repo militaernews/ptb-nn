@@ -122,7 +122,10 @@ async def support(update: Update, context: CallbackContext):
 async def admin(update: Update, context: CallbackContext):
     logging.info("update", update.message)
 
-    await update.message.delete()
+    try:
+        await update.message.delete()
+    except Exception:
+        logging.error(f"Could not delete message {update.message}")
 
     if update.message.reply_to_message is not None:
         if update.message.reply_to_message.is_automatic_forward:

@@ -4,8 +4,8 @@ import random
 import re
 from typing import List, Union, Dict
 
-import cairosvg
 import numpy
+import pyvips
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -222,6 +222,7 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
        height='{all_height}'
        viewBox='0 0 {all_width} {all_height}'
        version='1.1'
+        fill='#00231e'
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
 
@@ -295,9 +296,11 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
     <text y="{all_height - border_distance}" x="{all_width - border_distance}" font-size="26px" font-family="Arial" dominant-baseline="middle"  text-anchor="end" fill="gray" >zuletzt aktualisiert {datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S")}</text>
     </svg>"""
 
-    # logging.info(svg)
-
-    cairosvg.svg2png(bytestring=svg, write_to='field.png', background_color="#00231e")
+    logging.info(svg)
+    with open("field.svg", "w", encoding="UTF-8") as f:
+        f.write(svg)
+    image = pyvips.Image.new_from_file("field.svg", dpi=100)
+    image.write_to_file('field.png')
 
 
 async def handle_bingo(update: Update, context: CallbackContext):
