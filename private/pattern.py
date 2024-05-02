@@ -22,7 +22,7 @@ async def add_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def add_pattern_source(update: Update, context: CallbackContext) -> int | None:
-    if update.message.sender_chat.id is None:
+    if not (sender_chat_id := update.message.sender_chat.id):
         await update.message.reply_text("fwd-chat-id is none")
         return ConversationHandler.END
 
@@ -30,30 +30,27 @@ async def add_pattern_source(update: Update, context: CallbackContext) -> int | 
         await update.message.reply_text("Ich kenne nur Kanäle.")
         return ConversationHandler.END
 
-    source_id = update.message.sender_chat.id
-
-    result = get_source(source_id)
-
-    if result is None:
+    if not (result := get_source(sender_chat_id)):
         await update.message.reply_text(
-            f"Tut mir leid. Eine Quelle mit der ID <code>{source_id}</code> ist nicht in meiner Datenbank hinterlegt. Mit /add_source kannst du einen Kanal hinzufügen.")
+            f"Tut mir leid. Eine Quelle mit der ID <code>{sender_chat_id}</code> ist nicht in meiner Datenbank hinterlegt. Mit /add_source kannst du einen Kanal hinzufügen.")
         return ConversationHandler.END
 
     text = update.message.caption_html_urled or update.message.text_html_urled
 
-    context.chat_data[PATTERN_SOURCE_ID] = source_id
+    context.chat_data[PATTERN_SOURCE_ID] = sender_chat_id
 
     await update.message.reply_text(
-        f"Quelle: {source_id} - {update.message.sender_chat.username}\n\nBitte sende mir nun das Pattern. Kopiere es aus der folgenden Nachricht oder schreibe Regex.")
-    await update.message.reply_text(text, parse_mode=None)
+        f"Quelle: {sender_chat_id} - {update.message.sender_chat.username}\n\nBitte sende mir nun das Pattern. Kopiere es aus der folgenden Nachricht oder schreibe Regex.\n{text}",
+        parse_mode=None)
     return NEW_PATTERN
 
 
 async def new_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.chat_data[PATTERN] = update.message.text
+    pattern_text = update.message.text
+    context.chat_data[PATTERN] = pattern_text
     await update.message.reply_text(
         f"Neues Pattern für Quelle {context.chat_data[PATTERN_SOURCE_ID]}:\n\n"
-        f"{update.message.text}\n\n"
+        f"{pattern_text}\n\n"
         "Passt das so?\n\n"
         "Mit /save kannst du dieses Pattern hinzufügen, mit /cancel das ganze abbrechen.",
         parse_mode=None

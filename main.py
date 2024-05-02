@@ -16,7 +16,7 @@ import config
 from channel.crawl_loss_api import get_api, setup_crawl
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
-from channel.ukraine_russia import append_footer, append_footer_text, FOOTER_UA_RU
+from channel.ukraine_russia import append_footer, FOOTER_UA_RU, append_footer_text
 from config import NX_MEME, TELEGRAM, ADMINS
 from constant import FOOTER_MEME
 from data.db import get_destination_ids
@@ -73,11 +73,11 @@ def main():
     app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer))
+    app.add_handler(MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_text))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
-    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
+    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer))
 
     app.add_handler(InlineQueryHandler(inline_query))
 

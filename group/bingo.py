@@ -144,66 +144,23 @@ field_size = 5
 
 
 def generate_bingo_field():
-    key_list = list(ENTRIES)
-
-    random.shuffle(key_list)
-
-    d2 = {}
-
-    for key in key_list:
-        #   logging.info(key, ENTRIES[key])
-        d2[key] = ENTRIES[key]
-
-    outer = list()
-
-    for x in range(1, field_size * field_size, field_size):
-        inner = list()
-        #   logging.info(x)
-
-        for entry in list(d2.items())[x:x + field_size]:
-            #     logging.info("ENTRY >>>>>>>>> ", entry, entry[0])
-            if entry[1] is None:
-                regex = entry[0]
-            else:
-                regex = entry[1]
-
-            inner.append({
-                "text": entry[0],
-                "checked": False,
-                "regex": regex
-            })
-
-        outer.append(inner)
-
-    #  logging.info(outer)
-    return outer
+    key_list = random.sample(list(ENTRIES), len(ENTRIES))
+    return [[{"text": key, "checked": False, "regex": ENTRIES[key] or key} for key in key_list[x:x + field_size]] for x
+            in range(0, field_size * field_size, field_size)]
 
 
-def check_win(fields: List[List[Dict[str, Union[str, bool]]]]):
-    # horizontal condition
-    for row in fields:
-        if all(item["checked"] for item in row):
-            return True
-
-    # vertical condition
-    for column in zip(*fields):
-        if all(item["checked"] for item in column):
-            return True
-
-    return False
+def check_win(fields):
+    return any(all(item["checked"] for item in row) for row in fields) or any(
+        all(row[i]["checked"] for row in fields) for i in range(field_size))
 
 
-def set_checked(text: str, fields: List[List[Dict[str, Union[str, bool]]]]):
-    found = list()
-    #  logging.info(list(numpy.array(fields).flat))
-    for item in list(numpy.array(fields).flat):
-        matches = re.findall(item["regex"], text.replace(" ", ""), re.IGNORECASE)
-        #   logging.info(item["regex"], text, ">>>", matches)
-        if not item["checked"] and len(matches) != 0:
+def set_checked(text, fields):
+    found = []
+    for item in numpy.array(fields).flat:
+        if not item["checked"] and re.search(item["regex"], text.replace(" ", ""), re.IGNORECASE):
             item["checked"] = True
             found.append(item["text"])
             logging.info(f"{text} is a valid bingo entry")
-
     return found
 
 
@@ -230,7 +187,7 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
     """
 
     line_width = 2
-    line_half = int(line_width / 2)
+    line_half = line_width // 2
     height_treshold = int((canvas_height - (field_size * line_width)) / field_size + line_width)
     width_treshold = int((canvas_width - (
             field_size * line_width)) / field_size + line_width)
@@ -259,13 +216,14 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
             for index, value in enumerate(textss):
                 textss[index] = value.replace("_", " ")
 
-            inner_text = """<text  font-size="48px" font-family="Arial" dominant-baseline="central" """
-
-            if curr_field["checked"]:
-                inner_text += "fill=\"#e8cc00\" "
-            else:
-                inner_text += "fill=\"white\" "
-
+            inner_text = (
+                """<text  font-size="48px" font-family="Arial" dominant-baseline="central" """
+                + (
+                    'fill="#e8cc00"'
+                    if curr_field["checked"]
+                    else 'fill="white"'
+                )
+            )
             if len(textss) == 1:
                 inner_text += f""" y="50%"><tspan  x="50%" text-anchor="middle">{textss[0]}</tspan>"""
             elif len(textss) == 2:

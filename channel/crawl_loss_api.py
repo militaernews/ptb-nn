@@ -54,13 +54,11 @@ def divide(number: int, by: int) -> float:
 
 
 def chunks(data, size):
-    it = iter(data)
-    for i in range(0, len(data), size):
-        yield {k: data[k] for k in islice(it, size)}
+    return ({k: data[k] for k in islice(iter(data), i, i + size)} for i in range(0, len(data), size))
 
 
 def format_number(number: int):
-    return f"{number:,}".replace(",", "║").replace(".", ",").replace("║", ".")
+    return f"{number:,}".replace(",", " ").replace(".", ",").replace(" ", ".")
 
 
 def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: str):
@@ -185,14 +183,9 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
         try:
             new_losses = data[now]
             if "submarines" in new_losses:
-                if "boats" in new_losses:
-                    exist = new_losses["boats"]
-                else:
-                    exist = 0
+                exist = new_losses["boats"] if "boats" in new_losses else 0
                 new_losses["boats"] = new_losses["submarines"] + exist
                 new_losses.pop("submarines")
-        # new_losses.pop("captive")
-
         except KeyError as e:
             logging.error(f"Could not get entry with key: {e}")
             return
@@ -260,10 +253,7 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
                 daily = round(v / days, 1)
                 text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
                 if k in LOSS_STOCKPILE:
-                    if k == "personnel":
-                        storage = "Uniformiert"
-                    else:
-                        storage = "Lagerbestand"
+                    storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
                     text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
 
         last_id = context.bot_data.get("last_loss_id", 1)
@@ -286,6 +276,5 @@ async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #  context.bot_data.pop("last_loss", "")
     #    context.bot_data.pop("last_loss_id", 18147)
     await get_api(context)
-    logging.info("help?")
     context.job_queue.run_repeating(get_api, datetime.timedelta(hours=1.5))
     await update.message.reply_text("Scheduled Api Crawler.")
