@@ -1,6 +1,7 @@
 import re
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
 
@@ -153,17 +154,17 @@ async def edit_source(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_channel(update: Update, context: CallbackContext) -> int:
-    if update.message.forward_from_chat.id is None:
+    if update.message.sender_chat.id is None:
         await update.message.reply_text("fwd-chat-id is None")
         return ConversationHandler.END
 
-    if update.message.forward_from_chat.type != update.message.forward_from_chat.CHANNEL:
+    if update.message.sender_chat.type != ChatType.CHANNEL:
         await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
         return ConversationHandler.END
 
-    source_id = update.message.forward_from_chat.id
+    source_id = update.message.sender_chat.id
 
-    result = get_source(source_id)
+    result =await get_source(source_id)
 
     if result is None:
         await update.message.reply_text(
@@ -171,11 +172,11 @@ async def edit_source_channel(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
     context.chat_data[SOURCE_ID] = source_id
-    context.chat_data[SOURCE_TITLE] = update.message.forward_from_chat.title or result.channel_name
+    context.chat_data[SOURCE_TITLE] = update.message.sender_chat.title or result.channel_name
     context.chat_data[SOURCE_DISPLAY] = result.display_name
     context.chat_data[SOURCE_BIAS] = result.bias
     context.chat_data[SOURCE_INVITE] = result.invite
-    context.chat_data[SOURCE_USERNAME] = update.message.forward_from_chat.username or result.username
+    context.chat_data[SOURCE_USERNAME] = update.message.sender_chat.username or result.username
     context.chat_data[SOURCE_RATING] = result.rating
     context.chat_data[SOURCE_DESTINATION] = result.destination
     context.chat_data[SOURCE_DESCRIPTION] = result.description
@@ -317,7 +318,7 @@ async def edit_source_detail(update: Update, context: CallbackContext) -> int:
 
 
 async def save_source_detail(update: Update, context: CallbackContext) -> int | None:
-    if update.message.forward_from_chat.id != -1001616523535:
+    if update.message.sender_chat.id != -1001616523535:
         await update.message.reply_text(
             "Bitte leite mir den Detail-Post zu diesem Kanal aus @nn_sources weiter.")
         return EDIT_DETAIL
@@ -464,7 +465,7 @@ async def save_edit_source(update: Update, context: CallbackContext) -> int:
         is_active=context.chat_data[SOURCE_ACTIVE]
     )
 
-    update_source(source)
+    await update_source(source)
 
     await update.message.reply_text(f"Änderungen für Quelle <code>{context.chat_data[SOURCE_ID]}</code> übernommen.\n\n"
                                     f"Falls du eine Quelle aktiviert oder deaktiviert hast, dann muss erst der komplette Bot neu gestartet werden, sodass die Quellen neu eingelesen werden.")

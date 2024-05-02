@@ -1,6 +1,7 @@
 import re
 
 from telegram import Update
+from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
 from config import ADMINS
@@ -32,15 +33,15 @@ async def add_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def add_source_channel(update: Update, context: CallbackContext) -> int | None:
-    if update.message.forward_from_chat.id is None:
+    if update.message.sender_chat.id is None:
         await update.message.reply_text("fwd-chat-id is None")
         return ConversationHandler.END
 
-    if update.message.forward_from_chat.type != update.message.forward_from_chat.CHANNEL:
+    if update.message.sender_chat.type != ChatType.CHANNEL:
         await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
         return ConversationHandler.END
 
-    source_id = update.message.forward_from_chat.id
+    source_id = update.message.sender_chat.id
 
     result = get_source(source_id)
 
@@ -50,8 +51,8 @@ async def add_source_channel(update: Update, context: CallbackContext) -> int | 
         return ConversationHandler.END
 
     context.chat_data[SOURCE_ID] = source_id
-    context.chat_data[SOURCE_TITLE] = source_name = update.message.forward_from_chat.title
-    context.chat_data[SOURCE_USERNAME] = source_username = update.message.forward_from_chat.username
+    context.chat_data[SOURCE_TITLE] = source_name = update.message.sender_chat.title
+    context.chat_data[SOURCE_USERNAME] = source_username = update.message.sender_chat.username
 
     text = f"Passt das so?\n\nID: {source_id}\n\nName: {source_name}"
 
@@ -150,14 +151,13 @@ async def skip_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    set_source(SourceInsert(
+    await set_source(SourceInsert(
         context.chat_data[SOURCE_ID],
         context.chat_data[SOURCE_TITLE],
         context.chat_data[SOURCE_DISPLAY],
         context.chat_data[SOURCE_BIAS],
         context.chat_data[SOURCE_INVITE],
         context.chat_data[SOURCE_USERNAME]
-
     ))
 
     await update.message.reply_text(

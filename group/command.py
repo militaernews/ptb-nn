@@ -61,7 +61,7 @@ async def short(update: Update, context: CallbackContext):
     ], resize_keyboard=True, one_time_keyboard=True))
 
 
-async def inline_query(update: Update, context: CallbackContext):
+async def inline_query(update: Update, _: CallbackContext):
     query = update.inline_query.query
     if not query:
         return

@@ -1,5 +1,6 @@
 import logging
 import os
+from asyncio import run
 from datetime import datetime, timedelta
 from warnings import filterwarnings
 
@@ -29,7 +30,7 @@ from private.source.lookup import lookup
 
 filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
 
-LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d')}/{datetime.now().strftime('%H-%M-%S')}.log"
+LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
 os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
 logging.basicConfig(
     format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
@@ -46,7 +47,8 @@ if __name__ == "__main__":
         .read_timeout(15).get_updates_read_timeout(50) \
         .build()
 
-    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
+    destination_ids = run(get_destination_ids())
+    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=destination_ids, block=False))
     app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=config.UG_LZ, block=False))
     app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ugreq_\d+"))
     app.add_handler(CallbackQueryHandler(accept_request_ug, r"ugyes_\d+_\d+"))

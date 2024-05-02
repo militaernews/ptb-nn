@@ -26,7 +26,7 @@ async def db_cursor() -> AsyncGenerator:
         logging.error(f"{inspect.currentframe().f_code.co_name} — DB-Operation failed {repr(e)} - {format_exc()}")
 
 
-def get_source(channel_id: int) -> Optional[Source]:
+async def get_source(channel_id: int) -> Optional[Source]:
     async with db_cursor() as c:
         c.execute("select * from sources where channel_id = %s;",
                   [channel_id])
@@ -36,7 +36,7 @@ def get_source(channel_id: int) -> Optional[Source]:
         return res
 
 
-def get_destination_ids() -> [int]:
+async def get_destination_ids() -> [int]:
     async with db_cursor() as c:
         c.execute("select channel_id from destinations;")
         res: [int] = [item.channel_id for item in c.fetchall()]
@@ -45,7 +45,7 @@ def get_destination_ids() -> [int]:
         return res
 
 
-def set_source(source: SourceInsert):
+async def set_source(source: SourceInsert):
     async with db_cursor() as c:
         c.execute(
             "INSERT INTO sources(channel_id,channel_name,display_name,bias,invite,username) VALUES (%s, %s,%s,%s,%s,%s)",
@@ -53,7 +53,7 @@ def set_source(source: SourceInsert):
              source.username))
 
 
-def update_source(source: Source):
+async def update_source(source: Source):
     async with db_cursor() as c:
         c.execute(
             "UPDATE sources set channel_name = %s,bias = %s,destination = %s,display_name = %s,"
@@ -65,7 +65,7 @@ def update_source(source: Source):
              source.channel_id))
 
 
-def get_destinations() -> Dict[int, str]:
+async def get_destinations() -> Dict[int, str]:
     async with db_cursor() as c:
         c.execute("select * from destinations;")
         dests: [Destination] = c.fetchall()
@@ -80,7 +80,7 @@ def get_destinations() -> Dict[int, str]:
         return res
 
 
-def get_accounts() -> Dict[int, str]:
+async def get_accounts() -> Dict[int, str]:
     async with db_cursor() as c:
         c.execute("select * from accounts;")
         accs: [Account] = c.fetchall()
@@ -95,12 +95,12 @@ def get_accounts() -> Dict[int, str]:
         return res
 
 
-def set_pattern(channel_id: int, pattern: str):
+async def set_pattern(channel_id: int, pattern: str):
     async with db_cursor() as c:
         c.execute("INSERT INTO bloats(channel_id,pattern) VALUES (%s, %s)", (channel_id, pattern))
 
 
-def get_footer_by_channel_id(channel_id: int) -> str:
+async def get_footer_by_channel_id(channel_id: int) -> str:
     async with db_cursor() as c:
         c.execute("select footer from destinations where channel_id = %s;", [channel_id])
         res = c.fetchone()[0]

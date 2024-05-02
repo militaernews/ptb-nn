@@ -4,7 +4,7 @@ from telegram.ext import filters, ConversationHandler, CallbackContext, CommandH
 text_filter = filters.TEXT & ~filters.Regex(r"/cancel")
 
 
-async def cancel(update: Update, context: CallbackContext) -> int:
+async def cancel(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text("Änderungen verworfen.")
     return ConversationHandler.END
 

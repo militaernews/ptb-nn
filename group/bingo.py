@@ -296,7 +296,7 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
     <text y="{all_height - border_distance}" x="{all_width - border_distance}" font-size="26px" font-family="Arial" dominant-baseline="middle"  text-anchor="end" fill="gray" >zuletzt aktualisiert {datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S")}</text>
     </svg>"""
 
-    export_svg(svg,"field.png")
+    export_svg(svg, "field.png")
 
 
 async def handle_bingo(update: Update, context: CallbackContext):
@@ -313,40 +313,41 @@ async def handle_bingo(update: Update, context: CallbackContext):
     found = set_checked(text, context.bot_data["bingo"])
     found_amount = len(found)
 
-    if found_amount != 0:
+    if found_amount == 0:
+        return
 
-        if check_win(context.bot_data["bingo"]):
-            create_svg(context.bot_data["bingo"])
-            with open("field.png", "rb") as f:
-                msg = await  update.message.reply_photo(photo=f,
-                                                        caption=f"<b>BINGO! 🥳</b>"
-                                                                f"\n\n{mention_html(update.message.from_user.id, update.message.from_user.first_name)} hat den letzten Begriff beigetragen. Die erratenen Begriffe sind gelb eingefärbt."
-                                                                f"\n\nEine neue Runde beginnt..."
-                                                                f"\n{FOOTER}")
-                await msg.pin()
-            context.bot_data["bingo"] = generate_bingo_field()
-        else:
+    if check_win(context.bot_data["bingo"]):
+        create_svg(context.bot_data["bingo"])
+        with open("field.png", "rb") as f:
+            msg = await update.message.reply_photo(photo=f,
+                                                   caption=f"<b>BINGO! 🥳</b>"
+                                                           f"\n\n{mention_html(update.message.from_user.id, update.message.from_user.first_name)} hat den letzten Begriff beigetragen. Die erratenen Begriffe sind gelb eingefärbt."
+                                                           f"\n\nEine neue Runde beginnt..."
+                                                           f"\n{FOOTER}")
+            await msg.pin()
+        context.bot_data["bingo"] = generate_bingo_field()
+    else:
 
-            text = '<b>Treffer! 🥳</b>\n\n'
+        text = '<b>Treffer! 🥳</b>\n\n'
 
-            for index, word in enumerate(found):
-                text += f'\"{word}\"'
+        for index, word in enumerate(found):
+            text += f'\"{word}\"'
 
-                if index == found_amount - 1:
-                    if found_amount == 1:
-                        text += " ist ein gesuchter Begriff"
-                    else:
-                        text += " sind gesuchte Begriffe"
-
-                    text += " im Ukraine-Bingo."
-
-                elif index == found_amount - 2:
-                    text += " und "
-
+            if index == found_amount - 1:
+                if found_amount == 1:
+                    text += " ist ein gesuchter Begriff"
                 else:
-                    text += ", "
+                    text += " sind gesuchte Begriffe"
 
-            await update.message.reply_text(text)
+                text += " im Ukraine-Bingo."
+
+            elif index == found_amount - 2:
+                text += " und "
+
+            else:
+                text += ", "
+
+        await update.message.reply_text(text)
 
 
 async def bingo_field(update: Update, context: CallbackContext):
@@ -360,7 +361,7 @@ async def bingo_field(update: Update, context: CallbackContext):
                                                      f"Wenn eine in diesem Chat gesendete Nachricht auf dem Spielfeld vorkommendende Begriffe enthält, werden diese rausgestrichen.\n\n"
                                                      f"Ist eine gesamte Zeile oder Spalte durchgestrichen, dann heißt es <b>BINGO!</b> und eine neue Runde startet.\n"
                                                      f"{FOOTER}")
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logging.info("No field yet")
 
 

@@ -1,9 +1,9 @@
 from telegram import Update
+from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, filters, ContextTypes
 
 from config import ADMINS
-from data import db
-from data.db import get_source
+from data.db import get_source, set_pattern
 from private.common import cancel_handler, text_filter
 
 PATTERN = "new_pattern"
@@ -22,15 +22,15 @@ async def add_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def add_pattern_source(update: Update, context: CallbackContext) -> int | None:
-    if update.message.forward_from_chat.id is None:
+    if update.message.sender_chat.id is None:
         await update.message.reply_text("fwd-chat-id is none")
         return ConversationHandler.END
 
-    if update.message.forward_from_chat.type != update.message.forward_from_chat.CHANNEL:
-        await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
+    if update.message.sender_chat.type != ChatType.CHANNEL:
+        await update.message.reply_text("Ich kenne nur Kanäle.")
         return ConversationHandler.END
 
-    source_id = update.message.forward_from_chat.id
+    source_id = update.message.sender_chat.id
 
     result = get_source(source_id)
 
@@ -44,7 +44,7 @@ async def add_pattern_source(update: Update, context: CallbackContext) -> int | 
     context.chat_data[PATTERN_SOURCE_ID] = source_id
 
     await update.message.reply_text(
-        f"Quelle: {source_id} - {update.message.forward_from_chat.username}\n\nBitte sende mir nun das Pattern. Kopiere es aus der folgenden Nachricht oder schreibe Regex.")
+        f"Quelle: {source_id} - {update.message.sender_chat.username}\n\nBitte sende mir nun das Pattern. Kopiere es aus der folgenden Nachricht oder schreibe Regex.")
     await update.message.reply_text(text, parse_mode=None)
     return NEW_PATTERN
 
@@ -62,7 +62,7 @@ async def new_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def save_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    db.set_pattern(context.chat_data[PATTERN_SOURCE_ID], context.chat_data[PATTERN])
+    await set_pattern(context.chat_data[PATTERN_SOURCE_ID], context.chat_data[PATTERN])
     await update.message.reply_text(
         f"Pattern für Quelle <code>{context.chat_data[PATTERN_SOURCE_ID]}</code> hinzugefügt."
     )
@@ -77,7 +77,6 @@ add_pattern_handler = ConversationHandler(
         SAVE_PATTERN: [
             CommandHandler("save", save_pattern)
         ],
-
     },
     fallbacks=cancel_handler
 )

@@ -3,7 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 
-import constant
+from constant import FOOTER_MEME
 
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
@@ -33,7 +33,7 @@ async def add_footer_meme(update: Update, context: CallbackContext):
 
     try:
 
-        await update.channel_post.edit_caption(format_meme_footer(original_caption))
+        await update.channel_post.edit_caption(await format_meme_footer(original_caption))
 
         # Unfortunately it is not possible for bots to forward a mediagroup as a whole.
 
@@ -47,10 +47,10 @@ async def remove_media_group_id(context: CallbackContext):
     del context.chat_data[context.job.context]
 
 
-async def post_text_meme_nx(update: Update, context: CallbackContext):
+async def post_text_meme_nx(update: Update, _: CallbackContext):
     try:
         await update.channel_post.edit_text(
-            format_meme_footer(update.channel_post.text_html_urled), disable_web_page_preview=False
+            await format_meme_footer(update.channel_post.text_html_urled), disable_web_page_preview=False
         )
 
     #   await update.channel_post.forward(chat_id=NX_MAIN)
@@ -60,8 +60,8 @@ async def post_text_meme_nx(update: Update, context: CallbackContext):
         logging.error(f"Error when posting text: {e}")
 
 
-def format_meme_footer(original_text: str) -> str:
-    return f"{original_text}{constant.FOOTER_MEME}"
+async def format_meme_footer(original_text: str) -> str:
+    return f"{original_text}{FOOTER_MEME}"
 
 
 async def append_buttons_news(update: Update, context: CallbackContext):

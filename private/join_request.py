@@ -9,11 +9,11 @@ import config
 from util.helper import get_text2
 from util.regex import JOIN_ID
 
+share_text = "\n🚨 Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle."
+
 
 async def join_request_buttons(update: Update, context: CallbackContext):
     print("join: ", update.chat_join_request)
-
-    share_text = "\n🚨 Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle."
 
     try:
         await context.bot.approve_chat_join_request(update.chat_join_request.chat.id, update.effective_user.id)
@@ -64,18 +64,19 @@ async def join_request_ug(update: Update, context: CallbackContext):
 
 async def accept_rules_ug(update: Update, context: CallbackContext):
     user_id, name = update.callback_query.data.split("_")[1:]
+    msg = update.callback_query.message
 
     await context.bot.send_message(config.UG_ADMIN,
                                    f"Beitrittsanfrage von {mention_html(user_id, name)}",
                                    reply_markup=InlineKeyboardMarkup([[
                                        InlineKeyboardButton("Zulassen ✅",
-                                                            callback_data=f"ugyes_{user_id}_{update.callback_query.message.id}"),
+                                                            callback_data=f"ugyes_{user_id}_{msg.id}"),
                                        InlineKeyboardButton("Ablehnen❌",
-                                                            callback_data=f"ugno_{user_id}_{update.callback_query.message.id}")
+                                                            callback_data=f"ugno_{user_id}_{msg.id}")
                                    ], ]))
 
     try:
-        await update.callback_query.edit_message_text(f"{update.callback_query.message.text}\n\n"
+        await update.callback_query.edit_message_text(f"{msg.text}\n\n"
                                                       f"✅ <b>Anfrage gesendet. Die Admins überprüfen dein Profil.</b>",
                                                       reply_markup=None)
     except Exception as e:
