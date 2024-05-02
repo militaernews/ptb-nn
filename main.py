@@ -16,7 +16,7 @@ import config
 from channel.crawl_loss_api import get_api, setup_crawl
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
-from channel.ukraine_russia import append_footer, FOOTER_UA_RU, append_footer_text
+from channel.ukraine_russia import append_footer_single, append_footer_multiple, FOOTER_UA_RU, append_footer_text
 from config import NX_MEME, TELEGRAM, ADMINS
 from constant import FOOTER_MEME
 from data.db import get_destination_ids
@@ -41,7 +41,7 @@ def setup_logging():
         format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
         encoding="utf-8",
         filename=log_filename,
-        level=logging.INFO,
+        level=logging.DEBUG,
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
@@ -52,8 +52,9 @@ def setup_event_loop_policy():
 
 
 def main():
+
     app = ApplicationBuilder().token(TELEGRAM).defaults(
-        Defaults(parse_mode=ParseMode.HTML, link_preview_options=LinkPreviewOptions.is_disabled)) \
+        Defaults(parse_mode=ParseMode.HTML, link_preview_options=LinkPreviewOptions(is_disabled=True))) \
         .persistence(PicklePersistence(filepath="persistence")) \
         .read_timeout(15).get_updates_read_timeout(50) \
         .build()
@@ -74,11 +75,11 @@ def main():
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
     app.add_handler(
-        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_text))
+        MessageHandler(filter_ru_ua & filter_media  & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_single))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
-    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer))
+    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
 
     app.add_handler(InlineQueryHandler(inline_query))
 
@@ -129,7 +130,7 @@ def main():
 
 if __name__ == "__main__":
     setup_logging()
-    setup_event_loop_policy()
+   # setup_event_loop_policy()
 
     with contextlib.suppress(KeyboardInterrupt):
         main()
