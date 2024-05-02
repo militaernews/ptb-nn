@@ -1,13 +1,13 @@
-import asyncio
 import logging
 import re
 from pathlib import Path
 
+import asyncio
 from PIL import Image
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
 from telegram import Update
 from telegram.ext import ContextTypes
 

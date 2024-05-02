@@ -14,11 +14,11 @@ async def post_media_meme_nx(update: Update, context: CallbackContext):
             return
 
         context.job_queue.run_once(
-                remove_media_group_id,
-                20,
-                update.channel_post.media_group_id,
-                str(update.channel_post.media_group_id),
-            )
+            remove_media_group_id,
+            20,
+            update.channel_post.media_group_id,
+            str(update.channel_post.media_group_id),
+        )
 
 
 # TODO: make method more generic

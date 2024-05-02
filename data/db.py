@@ -1,4 +1,3 @@
-import inspect
 import logging
 from traceback import format_exc
 from typing import Optional, Dict
@@ -7,7 +6,7 @@ import psycopg2
 from psycopg2.extras import NamedTupleCursor
 
 from config import DATABASE_URL
-from data.model import Source, SourceInsert, Destination, Account
+from data.model import Source, SourceInsert
 
 logger = logging.getLogger(__name__)
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)

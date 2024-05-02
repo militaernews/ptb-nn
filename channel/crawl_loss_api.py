@@ -57,8 +57,21 @@ def chunks(data, size):
     return ({k: data[k] for k in islice(iter(data), i, i + size)} for i in range(0, len(data), size))
 
 
-def format_number(number: int):
+def format_number(number):
     return f"{number:,}".replace(",", " ").replace(".", ",").replace(" ", ".")
+
+
+def create_watermark():
+    return """
+    <g transform="translate(50%, 50%)">
+       <text
+            text-anchor="middle"
+            transform="rotate(-45)"
+            font-size="75"
+            fill-opacity="0.1"
+            fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
+    </g>
+    </svg>"""
 
 
 def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: str):
@@ -149,126 +162,74 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
                 svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
                  text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{percentage}%</text>"""
 
-    svg += f"""
-
-    <g transform="translate(50%, 50%)">
-       <text
-            text-anchor="middle"
-            transform="rotate(-45)"
-            font-size="{75}"
-            fill-opacity="0.1"
-            fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
-    </g>
-
-</svg>"""
+    svg += create_watermark()
 
     export_svg(svg, "loss.png")
+
+
+def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict, median_losses: dict,
+              last_id: int) -> str:
+    text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
+    for k, v in total_losses.items():
+        if new_losses.get(k, 0) != 0:
+            daily = round(v / days, 1)
+            text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
+            if k in LOSS_STOCKPILE:
+                storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
+                text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
+
+    text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
+            f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
+
+    return text
 
 
 async def get_api(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
     key = context.bot_data.get("last_loss", "")
     now = get_time()
-    logging.info("crawl: ", key, now)
-
     logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
 
-    if key != now:
-        logging.info("---- requesting ---- ")
+    if key == now:
+        return
 
-        res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily')
-        data = res.json()["data"]
-        #  print(data)
+    logging.info("---- requesting ---- ")
+    res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily')
+    data = res.json()["data"]
 
-        try:
-            new_losses = data[now]
-            if "submarines" in new_losses:
-                exist = new_losses["boats"] if "boats" in new_losses else 0
-                new_losses["boats"] = new_losses["submarines"] + exist
-                new_losses.pop("submarines")
-        except KeyError as e:
-            logging.error(f"Could not get entry with key: {e}")
-            return
+    try:
+        new_losses = data[now]
+        new_losses["boats"] = new_losses.get("boats", 0) + new_losses.pop("submarines", 0)
+    except KeyError as e:
+        logging.error(f"Could not get entry with key: {e}")
+        return
 
-        total_losses = {
-            'personnel': 0,
-            'tanks': 0,
-            'apv': 0,
-            'artillery': 0,
-            'mlrs': 0,
-            'aaws': 0,
-            'aircraft': 0,
-            'helicopters': 0,
-            'vehicles': 0,
-            'boats': 0,
-            'se': 0,
-            'uav': 0,
-            'missiles': 0,
-            'presidents': 0
-        }
+    total_losses = {k: 0 for k in new_losses.keys()}
+    median_losses = {k: [] for k in new_losses.keys() if k != "presidents"}
 
-        median_losses = {
-            'personnel': [],
-            'tanks': [],
-            'apv': [],
-            'artillery': [],
-            'mlrs': [],
-            'aaws': [],
-            'aircraft': [],
-            'helicopters': [],
-            'vehicles': [],
-            'boats': [],
-            'se': [],
-            'uav': [],
-            'missiles': [],
-        }
+    for item in data.values():
+        for k, v in item.items():
+            if k != "captive":
+                total_losses[k] = total_losses.get(k, 0) + v
+                if k != "presidents":
+                    median_losses[k].append(v)
 
-        for day, item in data.items():
-            #  print(day)
+    print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
-            for k, v in item.items():
-                #   print(k, v)
+    days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
+    display_date = datetime.datetime.now().strftime("%d.%m.%Y")
 
-                if k == "submarines":
-                    total_losses["boats"] = total_losses["boats"] + v
-                    median_losses["boats"].append(v)
-                    continue
+    create_svg(total_losses, new_losses, display_date)
 
-                if k != "captive":
-                    total_losses[k] = total_losses[k] + v
+    last_id = context.bot_data.get("last_loss_id", 1)
+    text = loss_text(display_date, days, total_losses, new_losses, median_losses, last_id)
 
-                    if k != "presidents":
-                        median_losses[k].append(v)
+    with open("loss.png", "rb") as f:
+        msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
 
-        print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
-
-        days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
-        display_date = (datetime.datetime.now()).strftime("%d.%m.%Y")
-
-        create_svg(total_losses, new_losses, display_date)
-
-        text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
-        for k, v in total_losses.items():
-            if k != "presidents" and new_losses[k] != 0:
-                daily = round(v / days, 1)
-                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
-                if k in LOSS_STOCKPILE:
-                    storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
-                    text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
-
-        last_id = context.bot_data.get("last_loss_id", 1)
-
-        text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
-                f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
-
-        logging.info(text)
-
-        with open("loss.png", "rb") as f:
-            msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
-
-        context.bot_data["last_loss"] = now
-        context.bot_data["last_loss_id"] = msg.id
+    context.bot_data["last_loss"] = now
+    context.bot_data["last_loss_id"] = msg.id
 
 
 async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):

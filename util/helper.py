@@ -46,13 +46,14 @@ async def log_error(context: CallbackContext, update: Update, file_name: str, e:
     )
 
 
-async def reply_html_combined(update: Update, context: CallbackContext, file_name: str, greet: bool = False):
+async def reply_html(update: Update, context: CallbackContext, file_name: str):
     await attempt_message_deletion(update)
     try:
-        footer = "" if greet else FOOTER
-        text = f'{get_text(update, file_name)}{footer}'
-        if greet:
+        text = get_text(update, file_name)
+        if "{}" in text:
             text = text.format(update.message.from_user.name)
+        else:
+            text = f'{text}{FOOTER}'
         logging.info(text)
         msg = await send_message_based_on_reply(update, context, text)
         context.job_queue.run_once(delete, MSG_REMOVAL_PERIOD, {CHAT_ID: msg.chat.id, MSG_ID: msg.message_id})

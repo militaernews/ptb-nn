@@ -19,7 +19,7 @@ async def lookup(update: Update, context: CallbackContext):
 
     if result is None:
         await context.bot.send_message(GROUP_SOURCE,
-                                       f"‼️ Neue Quelle\n\nchannel_id: <code>{sender_chat.id}</code>\n\nchannel_name: <code>{sender_chat.title}</code>\n\nusername: <code>{update.message.forward_from_chat.username}</code>")
+                                       f"‼️ Neue Quelle\n\nchannel_id: <code>{sender_chat.id}</code>\n\nchannel_name: <code>{sender_chat.title}</code>\n\nusername: <code>{update.message.sender_chat.username}</code>")
         await update.message.forward(GROUP_SOURCE)
         return await update.message.reply_text(
             f"Tut mir leid. Eine Quelle mit der ID <code>{sender_chat.id}</code> ist nicht in meiner Datenbank hinterlegt.")

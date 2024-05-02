@@ -8,7 +8,7 @@ from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
 import config
-from util.helper import reply_html, reply_photo, reply_html_greet
+from util.helper import reply_photo, reply_html
 
 
 async def setup(update: Update, context: CallbackContext):
@@ -170,7 +170,7 @@ async def cia(update: Update, context: CallbackContext):
 
 
 async def start(update: Update, context: CallbackContext):
-    await reply_html_greet(update, context, "start")
+    await reply_html(update, context, "start")
 
 
 async def unwarn_user(update: Update, context: CallbackContext):

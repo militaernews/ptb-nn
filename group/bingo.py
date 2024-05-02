@@ -217,12 +217,12 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
                 textss[index] = value.replace("_", " ")
 
             inner_text = (
-                """<text  font-size="48px" font-family="Arial" dominant-baseline="central" """
-                + (
-                    'fill="#e8cc00"'
-                    if curr_field["checked"]
-                    else 'fill="white"'
-                )
+                    """<text  font-size="48px" font-family="Arial" dominant-baseline="central" """
+                    + (
+                        'fill="#e8cc00"'
+                        if curr_field["checked"]
+                        else 'fill="white"'
+                    )
             )
             if len(textss) == 1:
                 inner_text += f""" y="50%"><tspan  x="50%" text-anchor="middle">{textss[0]}</tspan>"""
