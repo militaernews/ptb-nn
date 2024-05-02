@@ -44,7 +44,7 @@ async def add_footer_meme(update: Update, context: CallbackContext):
 
 
 async def remove_media_group_id(context: CallbackContext):
-    del context.chat_data[context.job.context]
+    del context.chat_data[context.job.data]
 
 
 async def post_text_meme_nx(update: Update, _: CallbackContext):

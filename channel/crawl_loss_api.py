@@ -1,4 +1,3 @@
-import base64
 import datetime
 import logging
 from itertools import islice
@@ -6,7 +5,6 @@ from statistics import median
 from typing import Dict
 
 import httpx
-from resvg_py.resvg_py import svg_to_base64
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -166,8 +164,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
 </svg>"""
 
-    export_svg(svg,"loss.png")
-
+    export_svg(svg, "loss.png")
 
 
 async def get_api(context: ContextTypes.DEFAULT_TYPE):

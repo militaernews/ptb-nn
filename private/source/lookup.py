@@ -21,7 +21,7 @@ async def lookup(update: Update, context: CallbackContext):
     if sender_chat.type != ChatType.CHANNEL:
         return await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
 
-    result = await get_source(source_id)
+    result = get_source(source_id)
 
     if result is None:
         await context.bot.send_message(GROUP_SOURCE,

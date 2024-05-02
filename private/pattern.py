@@ -62,7 +62,7 @@ async def new_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def save_pattern(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await set_pattern(context.chat_data[PATTERN_SOURCE_ID], context.chat_data[PATTERN])
+    set_pattern(context.chat_data[PATTERN_SOURCE_ID], context.chat_data[PATTERN])
     await update.message.reply_text(
         f"Pattern für Quelle <code>{context.chat_data[PATTERN_SOURCE_ID]}</code> hinzugefügt."
     )

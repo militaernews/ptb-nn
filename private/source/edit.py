@@ -164,7 +164,7 @@ async def edit_source_channel(update: Update, context: CallbackContext) -> int:
 
     source_id = update.message.sender_chat.id
 
-    result =await get_source(source_id)
+    result = get_source(source_id)
 
     if result is None:
         await update.message.reply_text(
@@ -465,7 +465,7 @@ async def save_edit_source(update: Update, context: CallbackContext) -> int:
         is_active=context.chat_data[SOURCE_ACTIVE]
     )
 
-    await update_source(source)
+    update_source(source)
 
     await update.message.reply_text(f"Änderungen für Quelle <code>{context.chat_data[SOURCE_ID]}</code> übernommen.\n\n"
                                     f"Falls du eine Quelle aktiviert oder deaktiviert hast, dann muss erst der komplette Bot neu gestartet werden, sodass die Quellen neu eingelesen werden.")

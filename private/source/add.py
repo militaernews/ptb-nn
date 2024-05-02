@@ -151,7 +151,7 @@ async def skip_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await set_source(SourceInsert(
+    set_source(SourceInsert(
         context.chat_data[SOURCE_ID],
         context.chat_data[SOURCE_TITLE],
         context.chat_data[SOURCE_DISPLAY],

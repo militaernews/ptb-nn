@@ -1,9 +1,12 @@
+import contextlib
 import logging
 import os
-from asyncio import run
+import sys
+from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
 from datetime import datetime, timedelta
 from warnings import filterwarnings
 
+from telegram import LinkPreviewOptions
 from telegram.constants import ParseMode
 from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
     ChatJoinRequestHandler, InlineQueryHandler, CallbackQueryHandler
@@ -30,25 +33,33 @@ from private.source.lookup import lookup
 
 filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
 
-LOG_FILENAME = rf"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
-os.makedirs(os.path.dirname(LOG_FILENAME), exist_ok=True)
-logging.basicConfig(
-    format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
-    encoding="utf-8",
-    filename=LOG_FILENAME,
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
-if __name__ == "__main__":
+def setup_logging():
+    log_filename = f"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
+    os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
+        encoding="utf-8",
+        filename=log_filename,
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+
+def setup_event_loop_policy():
+    if sys.version_info >= (3, 8) and sys.platform.lower().startswith("win"):
+        set_event_loop_policy(WindowsSelectorEventLoopPolicy())
+
+
+def main():
     app = ApplicationBuilder().token(TELEGRAM).defaults(
-        Defaults(parse_mode=ParseMode.HTML, disable_web_page_preview=True)) \
+        Defaults(parse_mode=ParseMode.HTML, link_preview_options=LinkPreviewOptions.is_disabled)) \
         .persistence(PicklePersistence(filepath="persistence")) \
         .read_timeout(15).get_updates_read_timeout(50) \
         .build()
 
-    destination_ids = run(get_destination_ids())
-    app.add_handler(ChatJoinRequestHandler(callback=join_request_buttons, chat_id=destination_ids, block=False))
+    app.add_handler(
+        ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
     app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=config.UG_LZ, block=False))
     app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ugreq_\d+"))
     app.add_handler(CallbackQueryHandler(accept_request_ug, r"ugyes_\d+_\d+"))
@@ -113,3 +124,11 @@ if __name__ == "__main__":
 
     print("### Run Local ###")
     app.run_polling(poll_interval=1)
+
+
+if __name__ == "__main__":
+    setup_logging()
+    setup_event_loop_policy()
+
+    with contextlib.suppress(KeyboardInterrupt):
+        main()
