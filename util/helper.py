@@ -1,5 +1,8 @@
+import base64
+import logging
 import os.path
 
+from resvg_py import svg_to_base64
 from telegram import Update, User
 from telegram.error import TelegramError
 from telegram.ext import CallbackContext
@@ -122,3 +125,11 @@ async def reply_photo(update: Update, context: CallbackContext, file_name: str, 
             f"<b>Caused by Update</b>\n<code>{update}</code>",
         )
         pass
+
+
+def export_svg(svg: str, filename: str):
+    logging.info(svg)
+    encoded = svg_to_base64(svg, dpi=300, font_dirs=["/res/fonts"],
+                            text_rendering="geometric_precision")
+    with open(filename, 'wb') as f:
+        f.write(base64.b64decode(encoded))

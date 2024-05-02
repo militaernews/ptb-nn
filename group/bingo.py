@@ -5,13 +5,13 @@ import re
 from typing import List, Union, Dict
 
 import numpy
-import pyvips
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
 from constant import FOOTER
+from util.helper import export_svg
 
 load_dotenv()
 
@@ -296,11 +296,7 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
     <text y="{all_height - border_distance}" x="{all_width - border_distance}" font-size="26px" font-family="Arial" dominant-baseline="middle"  text-anchor="end" fill="gray" >zuletzt aktualisiert {datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S")}</text>
     </svg>"""
 
-    logging.info(svg)
-    with open("field.svg", "w", encoding="UTF-8") as f:
-        f.write(svg)
-    image = pyvips.Image.new_from_file("field.svg", dpi=100)
-    image.write_to_file('field.png')
+    export_svg(svg,"field.png")
 
 
 async def handle_bingo(update: Update, context: CallbackContext):

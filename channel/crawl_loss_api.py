@@ -1,17 +1,18 @@
+import base64
 import datetime
-import json
 import logging
 from itertools import islice
 from statistics import median
 from typing import Dict
 
 import httpx
-import pyvips
+from resvg_py.resvg_py import svg_to_base64
 from telegram import Update
 from telegram.ext import ContextTypes
 
 import config
 import constant
+from util.helper import export_svg
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
@@ -94,8 +95,8 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
        xmlns:svg='http://www.w3.org/2000/svg'>
        <defs>
    <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
-    
-                   
+
+
      <stop offset="0%" style="stop-color:rgb(5,45,31);stop-opacity:1.00" />
           <stop offset="100%" style="stop-color:rgb(23,46,41);stop-opacity:1.00" />
 
@@ -117,8 +118,6 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
         logging.info(f"items :: {item}")
 
         for x, (k, v) in enumerate(item.items()):
-            #    print(y, x, "--", k, v)
-            # fill="#002a24" stroke="#2c5a2b" # stroke="gray" stroke-width="{stroke_width}"
             svg += f"""
         <rect
             width='{width_cell}'
@@ -150,11 +149,12 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
         </text>"""
 
             if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
-                svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{(y * height_cell) + (y + 1) * margin + heading_space}"
-                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{str(divide(v * 100, LOSS_STOCKPILE[k])).replace(".", ",")}%</text>"""
+                percentage = f"{v * 100 / LOSS_STOCKPILE[k]:.2f}".replace(".", ",")
+                svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
+                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{percentage}%</text>"""
 
     svg += f"""
-    
+
     <g transform="translate(50%, 50%)">
        <text
             text-anchor="middle"
@@ -163,15 +163,10 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             fill-opacity="0.1"
             fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
     </g>
-    
+
 </svg>"""
 
-    logging.info(svg)
-
-    with open("loss.svg", "w", encoding="UTF-8") as f:
-            f.write(svg)
-    image = pyvips.Image.new_from_file("loss.svg", dpi=100)
-    image.write_to_file('loss.png')
+    export_svg(svg,"loss.png")
 
 
 
@@ -187,7 +182,7 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
         logging.info("---- requesting ---- ")
 
         res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily')
-        data = json.load(res)["data"]
+        data = res.json()["data"]
         #  print(data)
 
         try:

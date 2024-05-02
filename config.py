@@ -5,13 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-vipsbin = os.getenv(r"VIPSLIB")
-add_dll_dir = getattr(os, 'add_dll_directory', None)
-if callable(add_dll_dir):
-    add_dll_dir(vipsbin)
-else:
-    os.environ['PATH'] = os.pathsep.join((vipsbin, os.environ['PATH']))
-
 TELEGRAM = os.getenv('TELEGRAM')
 DATABASE_URL = os.getenv('DATABASE_URL')
 ADMINS = json.loads(os.getenv('ADMINS'))
@@ -37,5 +30,5 @@ ADMIN_GROUPS = {
     -1001888944217: ADMIN_GROUP,  # NN_AFRIKA - still present?
     UG_LZ: UG_ADMIN,  # UKR_GER
     -1001618190222: -1001895565760,  # UA_Krieg
--1002104916595:ADMIN_GROUP, #Israel
+    -1002104916595: ADMIN_GROUP,  # Israel
 }
