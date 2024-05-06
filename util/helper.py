@@ -85,7 +85,7 @@ async def reply_photo(update: Update, context:  ContextTypes.DEFAULT_TYPE, file_
 
 def export_svg(svg: str, filename: str):
     logging.info(svg)
-    encoded = svg_to_base64(svg, dpi=300, font_dirs=["/res/fonts"], text_rendering="geometric_precision")
+    encoded = svg_to_base64(svg, dpi=300, font_dirs=["./res/fonts"], text_rendering="geometric_precision")
     with open(filename, 'wb') as f:
         f.write(base64.b64decode(encoded))
 

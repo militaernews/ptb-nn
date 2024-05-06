@@ -18,7 +18,7 @@ async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYP
     try:
         await update.channel_post.edit_caption(original_caption + FOOTER_UA_RU)
     except Exception as e:
-        logging.error("Error editing single :: ", e)
+        logging.error(f"Error editing single :: {e}", )
 
 
 async def append_footer_multiple(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -41,9 +41,9 @@ async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):
     original_caption = update.channel_post.text_html_urled
 
     try:
-        await update.channel_post.edit_caption(original_caption + FOOTER_UA_RU)
+        await update.channel_post.edit_text(original_caption + FOOTER_UA_RU)
     except Exception as e:
-        logging.exception("Error editing single :: ", e)
+        logging.exception(f"Error editing single :: {e}")
 
 
 async def append_footer_mg(context: CallbackContext):
@@ -55,9 +55,9 @@ async def append_footer_mg(context: CallbackContext):
         try:
             await context.bot.edit_message_caption(CHANNEL_UA_RU, post, caption=None)
         except Exception as e:
-            logging.exception("Error editing mediagroup other :: ", e)
+            logging.exception(f"Error editing mediagroup other :: {e}", )
 
     try:
         await context.bot.edit_message_caption(CHANNEL_UA_RU, posts[0], caption=context.job.data["text"] + FOOTER_UA_RU)
     except Exception as e:
-        logging.exception("Error editing mediagroup text :: ", e)
+        logging.exception(f"Error editing mediagroup text :: {e}")

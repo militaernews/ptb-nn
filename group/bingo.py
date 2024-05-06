@@ -171,7 +171,7 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
     canvas_width = 2360
     canvas_height = 1200
     border_distance = int((all_width - canvas_width) / 2)
-    #  logging.info("border_distance", border_distance)
+    background_color = "#000000"
 
     svg = f"""<?xml version='1.0' encoding='UTF-8' standalone='no'?>
     <svg
@@ -182,8 +182,10 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
         fill='#00231e'
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
-
-    <text y="{border_distance + 60}" x="50%" font-size="60px" font-family="Arial" dominant-baseline="middle"  fill="white" ><tspan dy="0" x="50%" font-weight="bold" text-anchor="middle">Ukraine-Bingo</tspan></text>
+ <rect width="100%" height="100%"   fill='{background_color}'/>
+    <text y="{border_distance + 60}" x="50%" font-size="60px" font-family="Arial" dominant-baseline="middle"  fill="white" >
+    <tspan dy="0" x="50%" font-weight="bold" text-anchor="middle">Ukraine-Bingo</tspan>
+    </text>
     """
 
     line_width = 2
@@ -229,13 +231,13 @@ def create_svg(field: List[List[Dict[str, Union[str, bool]]]]):
             elif len(textss) == 2:
                 inner_text += f""" y="40%" ><tspan  x="50%" text-anchor="middle" dy="1em">{textss[1]}</tspan><tspan  x="50%" text-anchor="middle" dy="-1em">{textss[0]}</tspan>"""
             elif len(textss) == 3:
-                inner_text += f"""y="50%"><tspan  x="50%" text-anchor="middle">{textss[1]}</tspan><tspan  x="50%" text-anchor="middle" dy="1em">{textss[2]}</tspan><tspan  x="50%" text-anchor="middle" dy="-2em">{textss[0]}</tspan>"""
+                inner_text += f""" y="50%"><tspan  x="50%" text-anchor="middle">{textss[1]}</tspan><tspan  x="50%" text-anchor="middle" dy="1em">{textss[2]}</tspan><tspan  x="50%" text-anchor="middle" dy="-2em">{textss[0]}</tspan>"""
             else:
                 inner_text = "> TOO LONG"
 
             svg_field += f"""
             {x_var} y="{current_height}" text-align="center">
-           <rect x="0" y="0" width="100%" height="100%"   stroke="#2c5a2b" stroke-width="6px" paint-order="fill" fill="#002a24"  />
+           <rect x="0" y="0" width="100%" height="100%"   stroke="#880808" stroke-width="6px" paint-order="fill" fill="#090117"  />
            {inner_text}</text>
          </svg>
     """

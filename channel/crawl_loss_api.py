@@ -92,7 +92,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     heading_color = "#ffffff"
     loss_color = "#ffffff"
     description_color = "#ffffff"
-    background_color = "#000000"
+    background_color = "#be6400"
 
     svg = f"""<?xml version='1.0' encoding='UTF-8' standalone='no'?>
     <svg
@@ -200,7 +200,12 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
 
     try:
         new_losses = data[now]
-        new_losses["boats"] = new_losses.get("boats", 0) + new_losses.pop("submarines", 0)
+        if "submarines" in new_losses:
+            exist = new_losses["boats"] if "boats" in new_losses else 0
+            new_losses["boats"] = new_losses["submarines"] + exist
+            new_losses.pop("submarines")
+        # new_losses.pop("captive")
+
     except KeyError as e:
         logging.error(f"Could not get entry with key: {e}")
         return
@@ -208,10 +213,14 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
     total_losses = {k: 0 for k in new_losses.keys()}
     median_losses = {k: [] for k in new_losses.keys() if k != "presidents"}
 
-    for item in data.values():
-        for k, v in item.items():
+    for daily_loss in data.values():
+        for k, v in daily_loss.items():
+            if k == "submarines":
+                total_losses["boats"] = total_losses["boats"] + v
+                median_losses["boats"].append(v)
+                continue
             if k != "captive":
-                total_losses[k] = total_losses.get(k, 0) + v
+                total_losses[k] = total_losses[k] + v
                 if k != "presidents":
                     median_losses[k].append(v)
 

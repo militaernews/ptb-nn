@@ -8,7 +8,6 @@ from psycopg2.extras import NamedTupleCursor
 from config import DATABASE_URL
 from data.model import Source, SourceInsert
 
-logger = logging.getLogger(__name__)
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)
 
 
@@ -22,19 +21,19 @@ def execute_db_operation(query: str, params: tuple = (), fetch: str = None):
                 return c.fetchall()
             conn.commit()
     except Exception as e:
-        logger.error(f"DB-Operation failed {repr(e)} - {format_exc()}")
+        logging.error(f"DB-Operation failed {repr(e)} - {format_exc()}")
 
 
 def get_source(channel_id: int) -> Optional[Source]:
     res = execute_db_operation("select * from sources where channel_id = %s;", (channel_id,), "one")
-    logger.info(res)
+    logging.info(res)
     return res
 
 
 def get_destination_ids() -> [int]:
     res = execute_db_operation("select channel_id from destinations;", fetch="all")
     ids = [item.channel_id for item in res]
-    logger.info(f"destination ids: {ids}")
+    logging.info(f"destination ids: {ids}")
     return ids
 
 
@@ -70,5 +69,5 @@ def set_pattern(channel_id: int, pattern: str):
 
 def get_footer_by_channel_id(channel_id: int) -> str:
     res = execute_db_operation("select footer from destinations where channel_id = %s;", (channel_id,), "one")
-    logger.info(f"{channel_id} - footer: {res}")
+    logging.info(f"{channel_id} - footer: {res}")
     return res[0] if res else None

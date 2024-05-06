@@ -120,7 +120,7 @@ async def support(update: Update, context: CallbackContext):
 
 
 async def admin(update: Update, context: CallbackContext):
-    logging.info("update", update.message)
+    logging.info(f"admin msg: {update.message}" )
 
     try:
         await update.message.delete()
