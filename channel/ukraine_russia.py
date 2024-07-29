@@ -10,7 +10,7 @@ from constant import FOOTER_UA_RU
 async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"append footer :: {update}")
 
-    if update.message.media_group_id is not None:
+    if update.channel_post.media_group_id is not None:
         return append_footer_multiple(update,context)
 
     original_caption = update.channel_post.caption_html_urled or ""

@@ -33,28 +33,31 @@ async def add_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def add_source_channel(update: Update, context: CallbackContext) -> int | None:
-    if update.message.sender_chat.id is None:
+    print(update.message)
+    source = update.message.forward_origin.chat
+
+    if source.id is None:
         await update.message.reply_text("fwd-chat-id is None")
         return ConversationHandler.END
 
-    if update.message.sender_chat.type != ChatType.CHANNEL:
+    if source.type != ChatType.CHANNEL:
         await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
         return ConversationHandler.END
 
-    source_id = update.message.sender_chat.id
 
-    result = get_source(source_id)
+
+    result = get_source(source.id)
 
     if result is not None:
         await update.message.reply_text(
-            f"Eine Quelle mit der ID <code>{source_id}</code> ist bereits in meiner Datenbank hinterlegt. Mit /edit_source kannst du einen Kanal überarbeiten.")
+            f"Eine Quelle mit der ID <code>{source.id}</code> ist bereits in meiner Datenbank hinterlegt. Mit /edit_source kannst du einen Kanal überarbeiten.")
         return ConversationHandler.END
 
-    context.chat_data[SOURCE_ID] = source_id
-    context.chat_data[SOURCE_TITLE] = source_name = update.message.sender_chat.title
-    context.chat_data[SOURCE_USERNAME] = source_username = update.message.sender_chat.username
+    context.chat_data[SOURCE_ID] = source.id
+    context.chat_data[SOURCE_TITLE] = source_name = source.title
+    context.chat_data[SOURCE_USERNAME] = source_username =source.username
 
-    text = f"Passt das so?\n\nID: {source_id}\n\nName: {source_name}"
+    text = f"Passt das so?\n\nID: {source.id}\n\nName: {source_name}"
 
     if source_username is None:
         text += "\n\nEs ist leider kein Nutzername (@beispielUsername) hinterlegt. Nutzer benötigen zum Beitreten dieses privaten Kanal einen Einladungslink. Bitte sende mir den Einladungslink im Format https://t.me/+123abcInvitehashblabla69"

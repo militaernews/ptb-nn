@@ -69,13 +69,13 @@ def main():
     filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
 
     filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & ~filters.FORWARDED
+    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
     app.add_handler(
         MessageHandler(filter_meme & filter_media & ~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
-    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
     app.add_handler(
-        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_single))
+        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU) , append_footer_single))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
@@ -99,7 +99,6 @@ def main():
     app.add_handler(CommandHandler("cia", cia))
 
     app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
-
     app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
 
     app.add_handler(add_source_handler)
@@ -128,7 +127,7 @@ def main():
     app.add_handler(MessageHandler(
         (filters.TEXT | filters.VIDEO | filters.ANIMATION | filters.PHOTO) & filters.ChatType.PRIVATE & ~filters.User(
             ADMINS), fwd))
-    app.add_handler(MessageHandler(filters.Message.reply_to_message & filters.Chat(ADMIN_GROUP) & ~filters.User(ADMINS),
+    app.add_handler(MessageHandler(filters.REPLY & filters.Chat(ADMIN_GROUP) ,
                                    respond_feedback))
 
     print("### Run Local ###")

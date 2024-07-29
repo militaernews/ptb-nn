@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, MessageOriginUser
 from telegram.ext import CallbackContext
 
 import config
@@ -17,8 +17,12 @@ async def fwd(update: Update, _: CallbackContext) :
 
 async def respond_feedback(update: Update, _: CallbackContext):
     try:
-        await update.message.copy(update.message.reply_to_message.from_user.id)
-    except:
+
+
+
+            await update.message.copy(update.message.reply_to_message.forward_origin.sender_user.id)
+
+    except Exception as e:
         await update.message.reply_text(
-            "Nutzer hat den Bot blockiert.")
+            f"Nutzer hat den Bot blockiert:\n\n{e} - {update.message.reply_to_message}")
 

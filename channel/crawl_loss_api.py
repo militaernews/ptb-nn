@@ -106,8 +106,8 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
    <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
 
 
-     <stop offset="0%" style="stop-color:rgb(5,45,31);stop-opacity:1.00" />
-          <stop offset="100%" style="stop-color:rgb(23,46,41);stop-opacity:1.00" />
+     <stop offset="0%" style="stop-color:#944F00;stop-opacity:1.00" />
+          <stop offset="100%" style="stop-color:#7F4400;stop-opacity:1.00" />
 
     </linearGradient>
   </defs>
@@ -210,8 +210,37 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Could not get entry with key: {e}")
         return
 
-    total_losses = {k: 0 for k in new_losses.keys()}
-    median_losses = {k: [] for k in new_losses.keys() if k != "presidents"}
+    total_losses = {
+        'personnel': 0,
+        'tanks': 0,
+        'apv': 0,
+        'artillery': 0,
+        'mlrs': 0,
+        'aaws': 0,
+        'aircraft': 0,
+        'helicopters': 0,
+        'vehicles': 0,
+        'boats': 0,
+        'se': 0,
+        'uav': 0,
+        'missiles': 0,
+        'presidents': 0
+    }
+    median_losses = {
+        'personnel': [],
+        'tanks': [],
+        'apv': [],
+        'artillery': [],
+        'mlrs': [],
+        'aaws': [],
+        'aircraft': [],
+        'helicopters': [],
+        'vehicles': [],
+        'boats': [],
+        'se': [],
+        'uav': [],
+        'missiles': [],
+    }
 
     for daily_loss in data.values():
         for k, v in daily_loss.items():
