@@ -3,6 +3,7 @@ import os.path
 
 from resvg_py import svg_to_bytes
 from telegram import Update, User
+from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 

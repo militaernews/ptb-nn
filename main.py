@@ -16,14 +16,15 @@ import config
 from channel.crawl_loss_api import get_api, setup_crawl
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.meme import post_media_meme_nx, post_text_meme_nx
-from channel.ukraine_russia import append_footer_single, append_footer_multiple, FOOTER_UA_RU, append_footer_text
-from config import NX_MEME, TELEGRAM, ADMINS
+from channel.ukraine_russia import append_footer_single, FOOTER_UA_RU, append_footer_text
+from config import NX_MEME, TELEGRAM, ADMINS, ADMIN_GROUP
 from constant import FOOTER_MEME
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
     mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user
 from group.dictionary import handle_other_chats
+from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
 from private.pattern import add_pattern_handler
@@ -52,7 +53,6 @@ def setup_event_loop_policy():
 
 
 def main():
-
     app = ApplicationBuilder().token(TELEGRAM).defaults(
         Defaults(parse_mode=ParseMode.HTML, link_preview_options=LinkPreviewOptions(is_disabled=True))) \
         .persistence(PicklePersistence(filepath="persistence")) \
@@ -75,7 +75,7 @@ def main():
 
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
     app.add_handler(
-        MessageHandler(filter_ru_ua & filter_media  & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_single))
+        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_single))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
     app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
@@ -124,13 +124,20 @@ def main():
     app.add_handler(CommandHandler("crawl", setup_crawl))
     app.job_queue.run_repeating(get_api, timedelta(hours=0.5))
 
+    # feedback
+    app.add_handler(MessageHandler(
+        (filters.TEXT | filters.VIDEO | filters.ANIMATION | filters.PHOTO) & filters.ChatType.PRIVATE & ~filters.User(
+            ADMINS), fwd))
+    app.add_handler(MessageHandler(filters.Message.reply_to_message & filters.Chat(ADMIN_GROUP) & ~filters.User(ADMINS),
+                                   respond_feedback))
+
     print("### Run Local ###")
     app.run_polling(poll_interval=1)
 
 
 if __name__ == "__main__":
     setup_logging()
-   # setup_event_loop_policy()
+    # setup_event_loop_policy()
 
     with contextlib.suppress(KeyboardInterrupt):
         main()
