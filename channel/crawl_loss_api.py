@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-
+import subprocess
 import logging
 import re
 from itertools import islice
@@ -11,7 +11,7 @@ from typing import Dict, TypedDict
 import cairosvg
 import httpx
 from pandas import read_csv
-#from resvg_py import svg_to_bytes
+#from resvg_python import svg_to_bytes
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -105,17 +105,24 @@ def format_number(number):
 def export_svg(svg: str, filename: str):
     logging.info(svg)
 
-    cairosvg.svg2png(bytestring=svg, write_to="loss2.png")
+    input_filename = filename.replace(".png", ".svg")
 
-  #  with open(filename, 'wb') as f:
-   #     f.write(bytes(svg_to_bytes(svg_string=svg, dpi=300, font_dirs=["../res/fonts"])))
+    with open(input_filename, "w", encoding='utf-8')as f:
+        f.write(svg)
+
+    command = fr'../tools/resvg "{input_filename}" loss4.png --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "../res/fonts"'
+    result = subprocess.run(command, stdout=subprocess.PIPE)
+
+    print("---\n\n\n\n\nRESVG: ", result.returncode, result)
+    print(result.returncode)
 
 def create_watermark():
     return """
-    <g transform="translate(50%, 50%)">
+    <g  x="50%" y="50%">
        <text
             text-anchor="middle"
             transform="rotate(-45)"
+           
             font-size="75px"
             fill-opacity="0.1"
             fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
@@ -187,29 +194,28 @@ dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#fffff
     logging.info("------")
 
     half = len(CATEGORIES) // 2 + 1
-    keys =[ [*CATEGORIES][:half], [False] + [*CATEGORIES][half:]]
+    keys = [[*CATEGORIES][:half], [False] + [*CATEGORIES][half:]]
 
-    for col, outer_losses in enumerate(keys):
-        for row, loss in enumerate(outer_losses):
+    positions = [(60, "RU"), (660, "UA")]
 
-            if loss is False:
-                continue
-            svg += create_entry(60 + (col) * 300, 110 + (row) * height_cell, total_losses[loss]["RU"], new_losses[loss]["RU"], CATEGORIES[loss])
-
-    keys.reverse()
-
-    for col, outer_losses in enumerate(keys):
-
-        for row, loss in enumerate(outer_losses):
-            if loss is False:
-                continue
-            svg += create_entry(660 + (col) * 300, 110 + (row) * 90, total_losses[loss]["UA"], new_losses[loss]["UA"], CATEGORIES[loss])
-
+    for x_offset, country in positions:
+        for col, outer_losses in enumerate(keys):
+            for row, loss in enumerate(outer_losses):
+                if loss is False:
+                    continue
+                svg += create_entry(
+                    x_offset + col * 300,
+                    110 + row * height_cell,
+                    total_losses[loss][country],
+                    new_losses[loss][country],
+                    CATEGORIES[loss]
+                )
+        keys.reverse()
 
 
     svg += create_watermark()
 
-    print(svg)
+   # print(svg)
 
     export_svg(svg, "loss.png")
 
@@ -231,28 +237,18 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 from typing import Dict
 
 def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
-    # Create an empty dictionary to store the result
     result = {}
-
-    # Iterate over the outer keys present in both dictionaries
     for outer_key in dict1.keys() & dict2.keys():
-        result[outer_key] = {}  # Initialize the nested dict for the result
-
-        # Iterate over the inner keys present in both nested dictionaries
+        result[outer_key] = {}
         for inner_key in dict1[outer_key].keys() & dict2[outer_key].keys():
-            # Compute the difference between the inner values in dict1 and dict2
-            if dict1[outer_key][inner_key] != dict2[outer_key][inner_key]:
-                result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
-            else:
-                result[outer_key][inner_key] = 0
-
+            result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
     return result
 
 def extract_losses(now):
     logging.info("---- requesting ---- ")
     df =read_csv(DATA_SOURCE)
     res = df[df['Date'].str.contains(now)]
-    print(res)
+   # print(res)
 
     san = {"RU": {}, "UA": {}}
     for col, data in res.items():
@@ -286,7 +282,7 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
 
     raw = extract_losses(now)
 
-    print(raw)
+  #  print(raw)
 
     totals = {}
 
@@ -305,14 +301,14 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
             else:
                 totals[COLUMNS[cat]] = {k: v}
 
-    print(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+ #   print(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
     with open("losses.json", "r", encoding="utf-8") as f:
         old_loss = load(f)
 
     diff_loss = diff_dicts(old_loss,totals)
 
-    print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+ #   print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
     with open("losses.json", "w", encoding="utf-8") as f:
         f.write(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
