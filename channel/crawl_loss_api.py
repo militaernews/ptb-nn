@@ -1,35 +1,77 @@
+import asyncio
 import datetime
-import logging
-from itertools import islice
-from statistics import median
-from typing import Dict
 
+import logging
+import re
+from itertools import islice
+from json import dumps, load
+from statistics import median
+from typing import Dict, TypedDict
+
+import cairosvg
 import httpx
+from pandas import read_csv
+#from resvg_py import svg_to_bytes
 from telegram import Update
 from telegram.ext import ContextTypes
 
 import config
-import constant
-from util.helper import export_svg
+#import constant
+#from util.helper import export_svg
 
-LOSS_DESCRIPTIONS = {
-    'tanks': "Panzer",
-    'apv': "Gepanzerte Fahrzeuge",
-    'artillery': "Artillerie",
-    'mlrs': "Mehrfachraketenwerfer",
-    'aaws': "Flugabwehr",
-    'aircraft': "Flugzeuge",
-    'helicopters': "Hubschrauber",
-    'uav': "Drohnen",
-    'vehicles': "Lastkraftwagen",
-    'boats': "Marine",
-    'se': "Spezialausrüstung",
-    'missiles': "Marschflugkörper",
-    'personnel': "Getötetes Personal",
-    "presidents": "Präsidenten"
+DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
+
+CATEGORIES ={
+    "TANK": "Kampfpanzer",
+    "IFV": "Schützenpanzer",
+    "APC": "Transportpanzer",
+    "AFV": "Geschützte Fahrzeuge",
+    "Artillery": "Rohrartillerie",
+    "MLRS": "Raketenartillerie",
+    "CSS": "Logistik- &amp; Zugfahrzeuge",
+    "ARV": "Pionierfahrzeuge",
+    "C2": "Kommandoposten",
+    "Radar": "Radare",
+    "EW": "Elektronische Kampfführung",
+    "FLAK": "Flugabwehrkanonen",
+    "SAM": "Boden-Luft-Startgeräte",
+    "Plane": "Flugzeuge",
+    "Helicopter": "Hubschrauber",
+    "UAV": "Kampfdrohnen",
+    "Marine": "Schiffe, Boote &amp; U-Boote",
 }
 
-LOSS_STOCKPILE = {
+COLUMNS = {
+    'Aircraft': 'Plane',
+    'Anti-Aircraft_Guns': "FLAK",
+    'Artillery_Support_Vehicles_And_Equipment': "CSS",
+    'Command_Posts_And_Communications_Stations': "C2",
+    'Helicopters': "Helicopter",
+    'Multiple_Rocket_Launchers': "MLRS",
+    'Naval_Ships': "Marine",
+    'Naval_Ships_and_Submarines': "Marine",
+    'Self-Propelled_Anti-Aircraft_Guns': "FLAK",
+    'Self-Propelled_Artillery': "Artillery",
+    'Surface-To-Air_Missile_Systems': "SAM",
+    'Tanks': 'TANK',
+    'Towed_Artillery': "Artillery",
+    'Trucks,_Vehicles_and_Jeeps': "CSS",
+    'Unmanned_Combat_Aerial_Vehicles': "UAV",
+    "Radars_And_Communications_Equipment": "Radar",
+    'Radars': "Radar",
+    'Self-Propelled_Anti-Tank_Missile_Systems': "APC",
+    'Engineering_Vehicles_And_Equipment': "ARV",
+    'Armoured_Fighting_Vehicles': "IFV",
+    'Infantry_Fighting_Vehicles': "IFV",
+    'Armoured_Personnel_Carriers': "APC",
+    'Infantry_Mobility_Vehicles': "APC",
+    'Jammers_And_Deception_Systems': "EW",
+    'Mine-Resistant_Ambush_Protected': "AFV",
+}
+
+
+
+STOCKPILE_RU = {
     'tanks': 8168,
     'apv': 26993,
     'artillery': 18007,
@@ -60,6 +102,13 @@ def chunks(data, size):
 def format_number(number):
     return f"{number:,}".replace(",", " ").replace(".", ",").replace(" ", ".")
 
+def export_svg(svg: str, filename: str):
+    logging.info(svg)
+
+    cairosvg.svg2png(bytestring=svg, write_to="loss2.png")
+
+  #  with open(filename, 'wb') as f:
+   #     f.write(bytes(svg_to_bytes(svg_string=svg, dpi=300, font_dirs=["../res/fonts"])))
 
 def create_watermark():
     return """
@@ -67,26 +116,33 @@ def create_watermark():
        <text
             text-anchor="middle"
             transform="rotate(-45)"
-            font-size="75"
+            font-size="75px"
             fill-opacity="0.1"
             fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
     </g>
     </svg>"""
 
 
-def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: str):
+def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
+    return f""" 
+
+    <text style="font-size:40px;font-family:Impact;fill:#ffffff;" x="{x}" y="{y}">
+{total}<tspan style="fill:#ffd42a">+{new}</tspan><tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
+
+def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dict[str,int]], day: str):
     field_size = 2
-    all_width = 1342
+    all_width = 1300
+    coat_size = 300
     margin = 24
 
-    heading_size = 46
+    heading_size = 26
     heading_space = margin * 2.5 + heading_size
 
     items = list(chunks(total_losses, field_size))
     row_count = len(items)
     width_cell = (all_width - (field_size + 1) * margin) / field_size
-    height_cell = 160
-    all_height = row_count * (margin + height_cell) + heading_space
+    height_cell = 90
+    all_height = (row_count-1) * (margin + height_cell) # + heading_space
 
     new_color = "#e8cc00"
     heading_color = "#ffffff"
@@ -102,166 +158,175 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
        version='1.1'      
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
-       <defs>
-   <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
+ 
+<defs>
 
+<linearGradient gradientTransform="rotate(-100, 0.5, 0.5)" x1="50%" y1="0%" x2="50%" y2="100%" id="gradient">
+    <stop stop-color="hsl(0, 100%, 20%)" stop-opacity="1" offset="0%"/>
+    <stop stop-color="hsl(180, 100%, 20%)" stop-opacity="1" offset="100%"/>
+</linearGradient>
 
-     <stop offset="0%" style="stop-color:#944F00;stop-opacity:1.00" />
-          <stop offset="100%" style="stop-color:#7F4400;stop-opacity:1.00" />
+<filter id="shadow" x="0" y="0" width="1" height="1" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+  <feGaussianBlur stdDeviation="70"/>
+</filter>
 
-    </linearGradient>
-  </defs>
-    <rect width="100%" height="100%"   fill='{background_color}'/>
-        <text
-            x="50%"
-            y="{heading_size + margin}"
-            text-anchor="middle"
-            font-size="{heading_size}"
-            fill="{heading_color}"
-            font-family="Bahnschrift">Russische Verluste in der Ukraine - {day}</text>
+</defs>
+ 
+     <rect fill="#000" height="100%" width="100%" x="0" y="0"  />
+ <rect  fill="url(#gradient)"  height="100%" width="100%" x="0" y="0" filter="url(#shadow)"  rx="8"  />
+ 
+<image x="{all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.15" href="./ru_coat.svg"/>
+
+<image x="{all_width/4 *3-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.15" href="./ua_coat.svg" />
+
+            <text  style="font-size:48px;font-family:Impact;text-anchor:middle;fill:#ffffff;"
+       x="{all_width/2}"  y="90">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
+dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#ffffff;">Geolokalisierte Materialverluste</tspan></text>
     """
 
     logging.info("------")
 
-    for y, item in enumerate(items):
-        logging.info(f"items :: {item}")
+    half = len(CATEGORIES) // 2 + 1
+    keys =[ [*CATEGORIES][:half], [False] + [*CATEGORIES][half:]]
 
-        for x, (k, v) in enumerate(item.items()):
-            svg += f"""
-        <rect
-            width='{width_cell}'
-            height='{height_cell}'
-            x='{x * width_cell + (x + 1) * margin}'
-            y="{(y * height_cell) + y * margin + heading_space}"
-            paint-order="fill"
-            rx="16"
-            fill="url(#lgrad)"
-          />
+    for col, outer_losses in enumerate(keys):
+        for row, loss in enumerate(outer_losses):
 
-        <text
-            x="{x * width_cell + (x + 2) * margin}"
-            y="{(y * height_cell) + (y + 2.2) * margin + heading_space}"
-            text-anchor="start"
-            dominant-baseline="central"
-            font-size="58px"
-            font-family="Bahnschrift"
-            fill="{loss_color}">{format_number(v)}<tspan """
+            if loss is False:
+                continue
+            svg += create_entry(60 + (col) * 300, 110 + (row) * height_cell, total_losses[loss]["RU"], new_losses[loss]["RU"], CATEGORIES[loss])
 
-            if k != "presidents" and new_losses[k] != 0:
-                svg += f"fill='{new_color}'> +{format_number(new_losses[k])}</tspan><tspan "
+    keys.reverse()
 
-            svg += f"""dy="1.5em"
-            text-anchor="start"
-            fill="{description_color}"
-            x="{x * width_cell + (x + 2) * margin}"
-            font-size="42px">{LOSS_DESCRIPTIONS[k]}</tspan>
-        </text>"""
+    for col, outer_losses in enumerate(keys):
 
-            if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
-                percentage = f"{v * 100 / LOSS_STOCKPILE[k]:.2f}".replace(".", ",")
-                svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
-                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{percentage}%</text>"""
+        for row, loss in enumerate(outer_losses):
+            if loss is False:
+                continue
+            svg += create_entry(660 + (col) * 300, 110 + (row) * 90, total_losses[loss]["UA"], new_losses[loss]["UA"], CATEGORIES[loss])
+
+
 
     svg += create_watermark()
+
+    print(svg)
 
     export_svg(svg, "loss.png")
 
 
 def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict, median_losses: dict,
               last_id: int) -> str:
-    text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
-    for k, v in total_losses.items():
-        if new_losses.get(k, 0) != 0:
-            daily = round(v / days, 1)
-            text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
-            if k in LOSS_STOCKPILE:
-                storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
-                text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
+    text = f"🔥 <b>Geolokalisierte Materialverluste beider Seiten bis {display_date} (Tag {days})</b>"
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{'ff'}"
 
     return text
 
 
+
+
+
+from typing import Dict
+
+def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
+    # Create an empty dictionary to store the result
+    result = {}
+
+    # Iterate over the outer keys present in both dictionaries
+    for outer_key in dict1.keys() & dict2.keys():
+        result[outer_key] = {}  # Initialize the nested dict for the result
+
+        # Iterate over the inner keys present in both nested dictionaries
+        for inner_key in dict1[outer_key].keys() & dict2[outer_key].keys():
+            # Compute the difference between the inner values in dict1 and dict2
+            if dict1[outer_key][inner_key] != dict2[outer_key][inner_key]:
+                result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
+            else:
+                result[outer_key][inner_key] = 0
+
+    return result
+
+def extract_losses(now):
+    logging.info("---- requesting ---- ")
+    df =read_csv(DATA_SOURCE)
+    res = df[df['Date'].str.contains(now)]
+    print(res)
+
+    san = {"RU": {}, "UA": {}}
+    for col, data in res.items():
+        if col.startswith(("Date", "Unnamed", "Change", "Ratio", "UNHCR")) or col.endswith(
+                ("Total", "Heavy_Mortars", "Anti-Tank_Guided_Missiles", "Logistics_Trains", "Unmanned_Aerial_Vehicles",
+                 "Man-Portable_Air_Defence_Systems")):
+            # print(col,"---",int(data.values[0]))
+
+            continue
+
+        if col.startswith("Russia"):
+            san["RU"][re.sub("Russia_", "", col)] = int(data.values[0])
+        elif col.startswith("Ukraine"):
+            san["UA"][re.sub("Ukraine_", "", col)] = int(data.values[0])
+
+    return san
+
 async def get_api(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
-    key = context.bot_data.get("last_loss", "")
+    if context is not None:
+        key = context.bot_data.get("last_loss", "")
+    else:
+        key  = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime("%Y.%m.%d")
     now = get_time()
     logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
 
     if key == now:
         return
 
-    logging.info("---- requesting ---- ")
-    res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily')
-    data = res.json()["data"]
 
-    try:
-        new_losses = data[now]
-        if "submarines" in new_losses:
-            exist = new_losses["boats"] if "boats" in new_losses else 0
-            new_losses["boats"] = new_losses["submarines"] + exist
-            new_losses.pop("submarines")
-        # new_losses.pop("captive")
 
-    except KeyError as e:
-        logging.error(f"Could not get entry with key: {e}")
-        return
+    raw = extract_losses(now)
 
-    total_losses = {
-        'personnel': 0,
-        'tanks': 0,
-        'apv': 0,
-        'artillery': 0,
-        'mlrs': 0,
-        'aaws': 0,
-        'aircraft': 0,
-        'helicopters': 0,
-        'vehicles': 0,
-        'boats': 0,
-        'se': 0,
-        'uav': 0,
-        'missiles': 0,
-        'presidents': 0
-    }
-    median_losses = {
-        'personnel': [],
-        'tanks': [],
-        'apv': [],
-        'artillery': [],
-        'mlrs': [],
-        'aaws': [],
-        'aircraft': [],
-        'helicopters': [],
-        'vehicles': [],
-        'boats': [],
-        'se': [],
-        'uav': [],
-        'missiles': [],
-    }
+    print(raw)
 
-    for daily_loss in data.values():
-        for k, v in daily_loss.items():
-            if k == "submarines":
-                total_losses["boats"] = total_losses["boats"] + v
-                median_losses["boats"].append(v)
+    totals = {}
+
+    for k, stats in raw.items():
+        for cat, v in stats.items():
+            if cat not in COLUMNS:
                 continue
-            if k != "captive":
-                total_losses[k] = total_losses[k] + v
-                if k != "presidents":
-                    median_losses[k].append(v)
+            print(k, cat, v, COLUMNS[cat])
+
+            if COLUMNS[cat] in totals and k in totals[COLUMNS[cat]]:
+                totals[COLUMNS[cat]][k] += v
+            elif COLUMNS[cat] in totals and k not in totals[COLUMNS[cat]]:
+                totals[COLUMNS[cat]][k] = v
+
+
+            else:
+                totals[COLUMNS[cat]] = {k: v}
+
+    print(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+
+    with open("losses.json", "r", encoding="utf-8") as f:
+        old_loss = load(f)
+
+    diff_loss = diff_dicts(old_loss,totals)
+
+    print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+
+    with open("losses.json", "w", encoding="utf-8") as f:
+        f.write(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+
 
     print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
     days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
     display_date = datetime.datetime.now().strftime("%d.%m.%Y")
 
-    create_svg(total_losses, new_losses, display_date)
+    create_svg(totals, diff_loss,  display_date)
 
     last_id = context.bot_data.get("last_loss_id", 1)
-    text = loss_text(display_date, days, total_losses, new_losses, median_losses, last_id)
+    text = loss_text(display_date, days, totals, diff_loss, {}, last_id)
 
     with open("loss.png", "rb") as f:
         msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
@@ -277,3 +342,5 @@ async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await get_api(context)
     context.job_queue.run_repeating(get_api, datetime.timedelta(hours=1.5))
     await update.message.reply_text("Scheduled Api Crawler.")
+
+asyncio.run( get_api(None))
