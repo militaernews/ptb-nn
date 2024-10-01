@@ -134,7 +134,7 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
     return f""" 
 
     <text style="font-size:40px;font-family:Impact;fill:#ffffff;" x="{x}" y="{y}">
-{total}<tspan style="fill:#ffd42a">+{new}</tspan><tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
+{format_number(total)}<tspan style="fill:#ffd42a">+{format_number(new)}</tspan><tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
 
 def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dict[str,int]], day: str):
     field_size = 2
