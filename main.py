@@ -56,10 +56,11 @@ def setup_event_loop_policy():
 
 def main():
     app = ApplicationBuilder().token(TELEGRAM).defaults(
-        Defaults(parse_mode=ParseMode.HTML, link_preview_options=LinkPreviewOptions(is_disabled=True))) \
-        .persistence(PicklePersistence(filepath="persistence")) \
+        Defaults(parse_mode=ParseMode.HTML)) \
         .read_timeout(15).get_updates_read_timeout(50) \
         .build()
+
+    #  .persistence(PicklePersistence(filepath="persistence")) \
 
     app.add_handler(
         ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))

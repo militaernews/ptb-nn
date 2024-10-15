@@ -53,7 +53,7 @@ def export_svg(svg: str, filename: str):
     with open(input_filename, "w", encoding='utf-8')as f:
         f.write(svg)
 
-    command = fr'../tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "../res/fonts"'
+    command = fr'./tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
     result = subprocess.run(command, stdout=subprocess.PIPE)
 
     print("---\n\n\n\n\nRESVG: ", result.returncode, result)
@@ -122,7 +122,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             text-anchor="middle"
             font-size="{heading_size}"
             fill="{heading_color}"
-            font-family="Bahnschrift">Russische Verluste in der Ukraine - {day}</text>
+            font-family="Bahnschrift">Russische Verluste laut ukrainischem Verteidigungsministerium - {day}</text>
     """
 
     logging.info("------")

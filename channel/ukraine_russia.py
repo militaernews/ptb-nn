@@ -11,7 +11,7 @@ async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYP
     logging.info(f"append footer :: {update}")
 
     if update.channel_post.media_group_id is not None:
-        return append_footer_multiple(update,context)
+        return #await append_footer_multiple(update,context)
 
     original_caption = update.channel_post.caption_html_urled or ""
 
@@ -32,7 +32,7 @@ async def append_footer_multiple(update: Update, context: ContextTypes.DEFAULT_T
         job.schedule_removal()
 
     data = {"ids": list(prev_list), "text": original_caption}
-    context.job_queue.run_once(append_footer_mg, 8, data, update.channel_post.media_group_id)
+    context.job_queue.run_once(append_footer_mg, 10, data, update.channel_post.media_group_id)
 
 
 async def append_footer_text(update: Update, _: ContextTypes.DEFAULT_TYPE):

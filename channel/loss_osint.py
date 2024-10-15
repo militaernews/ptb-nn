@@ -106,7 +106,7 @@ def export_svg(svg: str, filename: str):
     with open(input_filename, "w", encoding='utf-8')as f:
         f.write(svg)
 
-    command = fr'../tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "../res/fonts"'
+    command = fr'./tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
     result = subprocess.run(command, stdout=subprocess.PIPE)
 
     print("---\n\n\n\n\nRESVG: ", result.returncode, result)
@@ -174,9 +174,9 @@ def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dic
 <rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
 <rect  fill="url(#gradient)"  height="100%" width="100%" x="{min_x}" y="0" filter="url(#shadow)"  rx="8"  />
 
-<image x="{-all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./ru_coat.svg"/>
+<image x="{-all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ru_coat.svg"/>
 
-<image x="{all_width/4-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./ua_coat.svg" />
+<image x="{all_width/4-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ua_coat.svg" />
 
             <text  style="font-size:48px;font-family:Impact;text-anchor:middle;fill:#ffffff;"
       x="0" y="{(48+24)+margin}px">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
@@ -219,7 +219,7 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{'ff'}"
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
 
     return text
 
@@ -280,15 +280,7 @@ def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]
 
 async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
-    if context is not None:
-        key = context.bot_data.get("last_loss", "")
-    else:
-        key  = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime("%Y.%m.%d")
     now = get_time()
-    logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
-
-    if key == now:
-        return
 
     totals_today = extract_losses(now)
 
@@ -317,11 +309,9 @@ async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def setup_osint_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logging.info("setup crawl")
+    logging.info("setup osint")
     #  context.bot_data.pop("last_loss", "")
     #    context.bot_data.pop("last_loss_id_2", 18147)
     await get_osint_losses(context)
     context.job_queue.run_repeating(get_osint_losses, datetime.timedelta(days=7))
-    await update.message.reply_text("Scheduled Api Crawler.")
-
-asyncio.run( get_osint_losses(None))
+    await update.message.reply_text("Scheduled Osint.")

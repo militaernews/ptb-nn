@@ -1,6 +1,6 @@
 import re
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, MessageOrigin, MessageOriginChannel
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
@@ -154,15 +154,18 @@ async def edit_source(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_channel(update: Update, context: CallbackContext) -> int:
-    if update.message.sender_chat.id is None:
+
+    source: MessageOrigin = update.message.forward_origin
+    if source  is None:
         await update.message.reply_text("fwd-chat-id is None")
         return ConversationHandler.END
 
-    if update.message.sender_chat.type != ChatType.CHANNEL:
+    if source.type != ChatType.CHANNEL:
         await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
         return ConversationHandler.END
 
-    source_id = update.message.sender_chat.id
+    source: MessageOriginChannel = source
+    source_id =source.chat.id
 
     result = get_source(source_id)
 
@@ -172,11 +175,11 @@ async def edit_source_channel(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
     context.chat_data[SOURCE_ID] = source_id
-    context.chat_data[SOURCE_TITLE] = update.message.sender_chat.title or result.channel_name
+    context.chat_data[SOURCE_TITLE] = source.chat.title or result.channel_name
     context.chat_data[SOURCE_DISPLAY] = result.display_name
     context.chat_data[SOURCE_BIAS] = result.bias
     context.chat_data[SOURCE_INVITE] = result.invite
-    context.chat_data[SOURCE_USERNAME] = update.message.sender_chat.username or result.username
+    context.chat_data[SOURCE_USERNAME] = source.chat.username or result.username
     context.chat_data[SOURCE_RATING] = result.rating
     context.chat_data[SOURCE_DESTINATION] = result.destination
     context.chat_data[SOURCE_DESCRIPTION] = result.description
