@@ -1,23 +1,19 @@
 import asyncio
 import datetime
-import subprocess
 import logging
 import re
+import subprocess
 from itertools import islice
-from json import dumps, load
-from statistics import median
-from typing import Dict, TypedDict
+from typing import Dict
 
-import cairosvg
-import httpx
 from pandas import read_csv
-#from resvg_python import svg_to_bytes
 from telegram import Update
 from telegram.ext import ContextTypes
 
 import config
+
 #import constant
-#from util.helper import export_svg
+
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
@@ -32,7 +28,7 @@ CATEGORIES ={
     "ARV": "Pionierfahrzeuge",
     "C2": "Kommandoposten",
     "Radar": "Radare",
-    "EW": "Elektronische Kampfführung",
+    "EW": "EloKa",
     "FLAK": "Flugabwehrkanonen",
     "SAM": "Boden-Luft-Startgeräte",
     "Plane": "Flugzeuge",
@@ -87,8 +83,8 @@ STOCKPILE_RU = {
 }
 
 
-def get_time() -> str:
-    return (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y.%m.%d")
+def get_time(delta:int = 1) -> str:
+    return (datetime.datetime.now() - datetime.timedelta(days=delta)).strftime("%Y.%m.%d")
 
 
 def divide(number: int, by: int) -> float:
@@ -110,46 +106,42 @@ def export_svg(svg: str, filename: str):
     with open(input_filename, "w", encoding='utf-8')as f:
         f.write(svg)
 
-    command = fr'../tools/resvg "{input_filename}" loss4.png --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "../res/fonts"'
+    command = fr'../tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "../res/fonts"'
     result = subprocess.run(command, stdout=subprocess.PIPE)
 
     print("---\n\n\n\n\nRESVG: ", result.returncode, result)
     print(result.returncode)
 
-def create_watermark():
-    return """
-    <g  x="50%" y="50%">
-       <text
-            text-anchor="middle"
-            transform="rotate(-45)"
-           
-            font-size="75px"
-            fill-opacity="0.1"
-            fill="#a1ffff" >@Ukraine_Russland_Krieg_2022</text>
-    </g>
-    </svg>"""
+
 
 
 def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
+    if new == 0:
+        new_loss = ""
+    else:
+        new_loss = f'<tspan style="fill:#ffd42a">+{format_number(new)}</tspan>'
+
     return f""" 
 
     <text style="font-size:40px;font-family:Impact;fill:#ffffff;" x="{x}" y="{y}">
-{format_number(total)}<tspan style="fill:#ffd42a">+{format_number(new)}</tspan><tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
+{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
 
 def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dict[str,int]], day: str):
-    field_size = 2
+    field_size = 4
     all_width = 1300
+    min_x = -all_width/2
     coat_size = 300
-    margin = 24
+    margin = 64
+    margin_y = 8
 
-    heading_size = 26
-    heading_space = margin * 2.5 + heading_size
+    heading_size = 110
+    heading_space = margin  + heading_size
 
     items = list(chunks(total_losses, field_size))
-    row_count = len(items)
+    row_count = len(items*2)
     width_cell = (all_width - (field_size + 1) * margin) / field_size
     height_cell = 90
-    all_height = (row_count-1) * (margin + height_cell) # + heading_space
+    all_height = (row_count-1)*margin_y+  (row_count* height_cell) + 2*margin # + heading_space
 
     new_color = "#e8cc00"
     heading_color = "#ffffff"
@@ -161,10 +153,10 @@ def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dic
     <svg
        width='{all_width}'
        height='{all_height}'
-       viewBox='0 0 {all_width} {all_height}'
+       viewBox='{min_x} 0 {all_width} {all_height}'
        version='1.1'      
        xmlns='http://www.w3.org/2000/svg'
-       xmlns:svg='http://www.w3.org/2000/svg'>
+>
  
 <defs>
 
@@ -179,16 +171,16 @@ def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dic
 
 </defs>
  
-     <rect fill="#000" height="100%" width="100%" x="0" y="0"  />
- <rect  fill="url(#gradient)"  height="100%" width="100%" x="0" y="0" filter="url(#shadow)"  rx="8"  />
- 
-<image x="{all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.15" href="./ru_coat.svg"/>
+<rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
+<rect  fill="url(#gradient)"  height="100%" width="100%" x="{min_x}" y="0" filter="url(#shadow)"  rx="8"  />
 
-<image x="{all_width/4 *3-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.15" href="./ua_coat.svg" />
+<image x="{-all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./ru_coat.svg"/>
+
+<image x="{all_width/4-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./ua_coat.svg" />
 
             <text  style="font-size:48px;font-family:Impact;text-anchor:middle;fill:#ffffff;"
-       x="{all_width/2}"  y="90">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
-dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#ffffff;">Geolokalisierte Materialverluste</tspan></text>
+      x="0" y="{(48+24)+margin}px">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
+dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchentliche geolokalisierte Materialverluste</tspan></text>
     """
 
     logging.info("------")
@@ -196,16 +188,17 @@ dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#fffff
     half = len(CATEGORIES) // 2 + 1
     keys = [[*CATEGORIES][:half], [False] + [*CATEGORIES][half:]]
 
-    positions = [(60, "RU"), (660, "UA")]
+    positions = [(min_x, "RU"), (0, "UA")]
 
     for x_offset, country in positions:
+
         for col, outer_losses in enumerate(keys):
             for row, loss in enumerate(outer_losses):
                 if loss is False:
                     continue
                 svg += create_entry(
-                    x_offset + col * 300,
-                    110 + row * height_cell,
+                    int(col * (width_cell + margin) + x_offset +margin),
+                    int(heading_space + row * (height_cell + margin_y)),
                     total_losses[loss][country],
                     new_losses[loss][country],
                     CATEGORIES[loss]
@@ -213,7 +206,7 @@ dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#fffff
         keys.reverse()
 
 
-    svg += create_watermark()
+    svg += "</svg>"
 
    # print(svg)
 
@@ -222,7 +215,7 @@ dy="1em"  x="{all_width/2}"  style="font-size:36px;font-family:Arial;fill:#fffff
 
 def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict, median_losses: dict,
               last_id: int) -> str:
-    text = f"🔥 <b>Geolokalisierte Materialverluste beider Seiten bis {display_date} (Tag {days})</b>"
+    text = f"🔥 <b>Wöchentliche geolokalisierte Materialverluste beider Seiten bis {display_date} (Tag {days})</b>"
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
@@ -236,13 +229,7 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 
 from typing import Dict
 
-def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
-    result = {}
-    for outer_key in dict1.keys() & dict2.keys():
-        result[outer_key] = {}
-        for inner_key in dict1[outer_key].keys() & dict2[outer_key].keys():
-            result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
-    return result
+
 
 def extract_losses(now):
     logging.info("---- requesting ---- ")
@@ -264,9 +251,34 @@ def extract_losses(now):
         elif col.startswith("Ukraine"):
             san["UA"][re.sub("Ukraine_", "", col)] = int(data.values[0])
 
-    return san
+    res = {}
+    for k, stats in san.items():
+        for cat, v in stats.items():
+            if cat not in COLUMNS:
+                continue
+            print(k, cat, v, COLUMNS[cat])
 
-async def get_api(context: ContextTypes.DEFAULT_TYPE):
+            if COLUMNS[cat] in res and k in res[COLUMNS[cat]]:
+                res[COLUMNS[cat]][k] += v
+            elif COLUMNS[cat] in res and k not in res[COLUMNS[cat]]:
+                res[COLUMNS[cat]][k] = v
+
+
+            else:
+                res[COLUMNS[cat]] = {k: v}
+
+
+    return res
+
+def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
+    result = {}
+    for outer_key in dict1.keys() & dict2.keys():
+        result[outer_key] = {}
+        for inner_key in dict1[outer_key].keys() & dict2[outer_key].keys():
+            result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
+    return result
+
+async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
     if context is not None:
         key = context.bot_data.get("last_loss", "")
@@ -278,40 +290,13 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
     if key == now:
         return
 
+    totals_today = extract_losses(now)
 
+  #  print(dumps(totals_today, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
-    raw = extract_losses(now)
+    diff_loss = diff_dicts(extract_losses(get_time(8)),totals_today)
 
-  #  print(raw)
-
-    totals = {}
-
-    for k, stats in raw.items():
-        for cat, v in stats.items():
-            if cat not in COLUMNS:
-                continue
-            print(k, cat, v, COLUMNS[cat])
-
-            if COLUMNS[cat] in totals and k in totals[COLUMNS[cat]]:
-                totals[COLUMNS[cat]][k] += v
-            elif COLUMNS[cat] in totals and k not in totals[COLUMNS[cat]]:
-                totals[COLUMNS[cat]][k] = v
-
-
-            else:
-                totals[COLUMNS[cat]] = {k: v}
-
- #   print(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
-
-    with open("losses.json", "r", encoding="utf-8") as f:
-        old_loss = load(f)
-
-    diff_loss = diff_dicts(old_loss,totals)
-
- #   print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
-
-    with open("losses.json", "w", encoding="utf-8") as f:
-        f.write(dumps(totals, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+   # print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
 
     print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
@@ -319,24 +304,24 @@ async def get_api(context: ContextTypes.DEFAULT_TYPE):
     days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
     display_date = datetime.datetime.now().strftime("%d.%m.%Y")
 
-    create_svg(totals, diff_loss,  display_date)
+    create_svg(totals_today, diff_loss,  display_date)
 
-    last_id = context.bot_data.get("last_loss_id", 1)
-    text = loss_text(display_date, days, totals, diff_loss, {}, last_id)
+    last_id = context.bot_data.get("last_loss_id_2", 1)
+    text = loss_text(display_date, days, totals_today, diff_loss, {}, last_id)
 
     with open("loss.png", "rb") as f:
         msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
 
-    context.bot_data["last_loss"] = now
-    context.bot_data["last_loss_id"] = msg.id
+    context.bot_data["last_loss_2"] = now
+    context.bot_data["last_loss_id_2"] = msg.id
 
 
-async def setup_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def setup_osint_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info("setup crawl")
     #  context.bot_data.pop("last_loss", "")
-    #    context.bot_data.pop("last_loss_id", 18147)
-    await get_api(context)
-    context.job_queue.run_repeating(get_api, datetime.timedelta(hours=1.5))
+    #    context.bot_data.pop("last_loss_id_2", 18147)
+    await get_osint_losses(context)
+    context.job_queue.run_repeating(get_osint_losses, datetime.timedelta(days=7))
     await update.message.reply_text("Scheduled Api Crawler.")
 
-asyncio.run( get_api(None))
+asyncio.run( get_osint_losses(None))

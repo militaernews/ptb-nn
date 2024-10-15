@@ -13,8 +13,10 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
 from telegram.warnings import PTBUserWarning
 
 import config
-from channel.crawl_loss_api import get_api, setup_crawl
+
 from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
+from channel.loss_osint import get_osint_losses, setup_osint_crawl
+from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
 from channel.meme import post_media_meme_nx, post_text_meme_nx
 from channel.ukraine_russia import append_footer_single, FOOTER_UA_RU, append_footer_text
 from config import NX_MEME, TELEGRAM, ADMINS, ADMIN_GROUP
@@ -22,7 +24,7 @@ from constant import FOOTER_MEME
 from data.db import get_destination_ids
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
-    mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user
+    mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user,report_user
 from group.dictionary import handle_other_chats
 from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
@@ -119,9 +121,12 @@ def main():
                        handle_other_chats))
     app.add_handler(CommandHandler("warn", warn_user))
     app.add_handler(CommandHandler("unwarn", unwarn_user))
+    app.add_handler(CommandHandler("tartaros", report_user))
 
-    app.add_handler(CommandHandler("crawl", setup_crawl))
-    app.job_queue.run_repeating(get_api, timedelta(hours=0.5))
+    app.add_handler(CommandHandler("crawl_uamod", setup_uamod_crawl))
+    app.add_handler(CommandHandler("crawl_osint", setup_osint_crawl))
+    app.job_queue.run_repeating(get_uamod_losses, timedelta(hours=0.5))
+    app.job_queue.run_repeating(get_osint_losses, timedelta(days=7))
 
     # feedback
     app.add_handler(MessageHandler(

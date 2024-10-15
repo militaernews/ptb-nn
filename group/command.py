@@ -225,3 +225,19 @@ async def warn_user(update: Update, context: CallbackContext):
             warn_text = f"Hey! Das musste jetzt echt nicht sein. Bitte verhalte dich besser!\n\n{warn_Text}"
 
         await update.message.reply_to_message.reply_text(warn_text)
+
+async def report_user(update: Update, _: CallbackContext):
+    await update.message.delete()
+
+    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+        logging.info(f"reporting {update.message.reply_to_message.from_user.id} !!")
+        r = requests.post(url="http://localhost:8080/reports",
+                          json={
+                              "user_id": update.message.reply_to_message.from_user.id,
+                              "message": update.message.reply_to_message.text_html_urled,
+                              "account_id": 1
+                          })
+        logging.info(r)
+        await update.message.reply_to_message.reply_text(
+            f"Hey {mention(update)}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
+
