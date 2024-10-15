@@ -179,7 +179,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
 </svg>"""
 
-    export_svg(svg, "loss.png")
+    export_svg(svg, "uamod_loss.png")
 
 
 async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
@@ -281,7 +281,7 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
 
         logging.info(text)
 
-        with open("loss.png", "rb") as f:
+        with open("uamod_loss.png", "rb") as f:
             msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
 
         context.bot_data["last_loss"] = now

@@ -210,7 +210,7 @@ dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchent
 
    # print(svg)
 
-    export_svg(svg, "loss.png")
+    export_svg(svg, "osint_loss.png")
 
 
 def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict, median_losses: dict,
@@ -309,7 +309,7 @@ async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     last_id = context.bot_data.get("last_loss_id_2", 1)
     text = loss_text(display_date, days, totals_today, diff_loss, {}, last_id)
 
-    with open("loss.png", "rb") as f:
+    with open("osint_loss.png", "rb") as f:
         msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
 
     context.bot_data["last_loss_2"] = now
