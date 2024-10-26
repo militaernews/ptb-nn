@@ -5,7 +5,7 @@ from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
 from config import ADMINS
-from data.db import get_source, set_source
+from data.db import get_source, set_source, get_free_account_id
 from data.model import SourceInsert
 from private.common import text_filter, cancel_handler
 
@@ -154,17 +154,28 @@ async def skip_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    account = get_free_account_id()
+
     set_source(SourceInsert(
         context.chat_data[SOURCE_ID],
+        account.user_id,
         context.chat_data[SOURCE_TITLE],
         context.chat_data[SOURCE_DISPLAY],
         context.chat_data[SOURCE_BIAS],
         context.chat_data[SOURCE_INVITE],
-        context.chat_data[SOURCE_USERNAME]
+        context.chat_data[SOURCE_USERNAME],
+
     ))
 
+
+
+    joining = f"Ich werde nun versuchen mit dem Account '{account.name}' beizutreten. Bitte einen kurzen Augenblick Geduld."
+
     await update.message.reply_text(
-        "Kanal wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source")
+        f"Kanal '{context.chat_data[SOURCE_TITLE]}' wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source.\n\n{joining}")
+
+    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'}")
+
     return ConversationHandler.END
 
 

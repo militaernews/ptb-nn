@@ -6,7 +6,7 @@ import psycopg2
 from psycopg2.extras import NamedTupleCursor
 
 from config import DATABASE_URL
-from data.model import Source, SourceInsert
+from data.model import Source, SourceInsert, Account
 
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)
 
@@ -71,3 +71,8 @@ def get_footer_by_channel_id(channel_id: int) -> str:
     res = execute_db_operation("select footer from destinations where channel_id = %s;", (channel_id,), "one")
     logging.info(f"{channel_id} - footer: {res}")
     return res[0] if res else None
+
+def get_free_account_id ()-> Account:
+    res = execute_db_operation("SELECT * FROM Account WHERE user_id IN (    SELECT account_id    FROM Source    GROUP BY account_id    HAVING COUNT(*) < 450);", fetch="one")
+    logging.info(f"free account id: {res}")
+    return res[0]

@@ -22,6 +22,7 @@ class Source:
     invite: Optional[str] = None
     username: Optional[str] = None
     api_id: Optional[int] = None
+    account_id: Optional[int] = None
     description: Optional[str] = None
     rating: Optional[int] = None
     detail_id: Optional[int] = None
@@ -31,6 +32,7 @@ class Source:
 @dataclass
 class SourceInsert:
     channel_id: int
+    account_id: int
     channel_name: str
     display_name: Optional[str] = None
     bias: Optional[str] = None
@@ -48,6 +50,7 @@ class Destination:
 @dataclass
 class Account:
     api_id: int
+    user_id:int
     api_hash: str
     name: str
     phone_number: str
