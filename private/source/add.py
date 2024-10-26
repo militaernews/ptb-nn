@@ -131,7 +131,7 @@ async def add_source_bias(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def skip_display(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Setzen des Nutzernamens übersprungen.\n\n"
-                                    "Viele Kanäle sind klar voreingenommen, berichten also sehr positiv oder ausschließlich über eine Seite und negativ oder nur über Misserfolge der anderen. Bitte sende mir nun in einer Nachricht ein oder mehrere Flaggen-Emojis für die entsprechende Voreingenommenheit des Kanals. Gebe hierzu einen Doppelpunkt ein und suche dann das Land auf English, beispielweise :russia:\n\n" \
+                                    "Viele Kanäle sind klar voreingenommen, berichten also sehr positiv oder ausschließlich über eine Seite und negativ oder nur über Misserfolge der anderen. Bitte sende mir nun in einer Nachricht ein oder mehrere Flaggen-Emojis für die entsprechende Voreingenommenheit des Kanals. Gebe hierzu einen Doppelpunkt ein und suche dann das Land auf English, beispielweise :russia:\n\n"
                                     "Wenn der Kanal keine klar ersichtliche Voreingenommenheit aufweist, dann tippe einfach /skip"
 
                                     )
@@ -174,7 +174,7 @@ async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     await update.message.reply_text(
         f"Kanal '{context.chat_data[SOURCE_TITLE]}' wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source.\n\n{joining}")
 
-    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'}")
+    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'} [{update.message.from_user.id}]")
 
     return ConversationHandler.END
 
@@ -196,3 +196,17 @@ add_source_handler = ConversationHandler(
     },
     fallbacks=cancel_handler,
 )
+
+async def handle_join(update: Update, context: ContextTypes.DEFAULT_TYPE) :
+    args = update.message.text.split(" ")[1:]
+    
+    if len(args) < 3:
+        await update.message.reply_text("Arguments required:\n\n1. Joined Chat ID\n2. By User ID\n3. Result")
+        return
+
+    joined_chat = args[0]
+    joined_by = args[1]
+    joined_result = args[2]
+    
+    await context.bot.send_message(joined_by, f"Tried joining Chat: {joined_chat}\n---\nResult: {joined_result}")
+    

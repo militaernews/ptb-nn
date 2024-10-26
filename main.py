@@ -21,7 +21,7 @@ from channel.meme import post_media_meme_nx, post_text_meme_nx
 from channel.ukraine_russia import append_footer_single, FOOTER_UA_RU, append_footer_text
 from config import NX_MEME, TELEGRAM, ADMINS, ADMIN_GROUP
 from constant import FOOTER_MEME
-from data.db import get_destination_ids
+from data.db import get_destination_ids, get_accounts
 from group.bingo import bingo_field, reset_bingo
 from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
     mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user,report_user
@@ -30,7 +30,7 @@ from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
 from private.pattern import add_pattern_handler
-from private.source.add import add_source_handler
+from private.source.add import add_source_handler, handle_join
 from private.source.edit import edit_source_handler
 from private.source.lookup import lookup
 
@@ -107,6 +107,10 @@ def main():
     app.add_handler(add_source_handler)
     app.add_handler(edit_source_handler)
     app.add_handler(add_pattern_handler)
+
+    for account in get_accounts().values():
+        app.add_handler(CommandHandler("join",handle_join,filters.Chat(account.user_id),has_args=True ))
+
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 

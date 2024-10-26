@@ -58,9 +58,11 @@ def get_destinations() -> Dict[int, str]:
     return {d.channel_id: d.name for d in dests}
 
 
-def get_accounts() -> Dict[int, str]:
+def get_accounts() -> Dict[int, Account]:
     accs = execute_db_operation("select * from accounts;", fetch="all")
-    return {a.api_id: a.name for a in accs}
+    return {a.api_id: a for a in accs}
+
+
 
 
 def set_pattern(channel_id: int, pattern: str):

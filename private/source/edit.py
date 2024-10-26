@@ -33,33 +33,30 @@ back_keyboard = InlineKeyboardMarkup([back_button])
 
 
 def get_destination(context: CallbackContext) -> str | None:
-    if context.chat_data[SOURCE_DESTINATION] is not None:
-        context.chat_data[DESTINATIONS] = get_destinations()
-        return context.chat_data[DESTINATIONS][context.chat_data[SOURCE_DESTINATION]]
-    else:
+    if context.chat_data[SOURCE_DESTINATION] is None:
         return None
+    
+    context.chat_data[DESTINATIONS] = get_destinations()
+    return context.chat_data[DESTINATIONS][context.chat_data[SOURCE_DESTINATION]]
 
 
 def get_account(context: CallbackContext) -> str | None:
-    if context.chat_data[SOURCE_API] is not None:
-        context.chat_data[ACCOUNTS] = get_accounts()
-        print("accounts", context.chat_data[ACCOUNTS], context.chat_data[SOURCE_API],
-              type(context.chat_data[SOURCE_API]))
-        return context.chat_data[ACCOUNTS][context.chat_data[SOURCE_API]]
-    else:
+    if context.chat_data[SOURCE_API] is None:
         return None
+    
+    context.chat_data[ACCOUNTS] = get_accounts()
+    print("accounts", context.chat_data[ACCOUNTS], context.chat_data[SOURCE_API],
+          type(context.chat_data[SOURCE_API]))
+    return context.chat_data[ACCOUNTS][context.chat_data[SOURCE_API]]
 
 
 def get_rating(context: CallbackContext) -> str | None:
-    if context.chat_data[SOURCE_RATING] is not None:
-        print("rating", context.chat_data[SOURCE_RATING],
-              type(context.chat_data[SOURCE_RATING]))
-        rating = ""
-        for _ in range(context.chat_data[SOURCE_RATING]):
-            rating += "⭐️"
-        return rating
-    else:
+    if context.chat_data[SOURCE_RATING] is None:
         return None
+    
+    print("rating", context.chat_data[SOURCE_RATING],
+          type(context.chat_data[SOURCE_RATING]))
+    return "".join("⭐️" for _ in range(context.chat_data[SOURCE_RATING]))
 
 
 def get_detail(context: CallbackContext) -> str | None:
@@ -108,11 +105,8 @@ def change_keyboard(context: CallbackContext) -> InlineKeyboardMarkup:
         ]
     ]
 
-    if context.chat_data[SOURCE_ACTIVE]:
-        active_text = "✅ Aktiv"
-    else:
-        active_text = "✖️ Inaktiv"
-
+    active_text = "✅ Aktiv" if context.chat_data[SOURCE_ACTIVE] else "✖️ Inaktiv"
+    
     if context.chat_data[SOURCE_API] and context.chat_data[SOURCE_DESTINATION] is not None:
         keyboard.append([InlineKeyboardButton(active_text, callback_data=SOURCE_ACTIVE)])
 
@@ -407,7 +401,7 @@ async def clear_source_destination(update: Update, context: CallbackContext) -> 
 async def edit_source_api(update: Update, context: CallbackContext) -> int:
     context.chat_data[ACCOUNTS] = get_accounts()
 
-    keyboard = list()
+    keyboard = []
 
     for k, v in context.chat_data[ACCOUNTS].items():
 
