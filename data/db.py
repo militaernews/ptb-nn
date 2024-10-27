@@ -39,7 +39,7 @@ def get_destination_ids() -> [int]:
 
 def set_source(source: SourceInsert):
     execute_db_operation(
-        "INSERT INTO sources(channel_id,channel_name,display_name,bias,invite,username) VALUES (%s, %s,%s,%s,%s,%s)",
+        "INSERT INTO sources(channel_id,api_id,channel_name,display_name,bias,invite,username) VALUES (%s,%s, %s,%s,%s,%s,%s)",
         (source.channel_id, source.channel_name, source.display_name, source.bias, source.invite, source.username))
 
 

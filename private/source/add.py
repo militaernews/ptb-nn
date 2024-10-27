@@ -1,3 +1,4 @@
+import logging
 import re
 
 from telegram import Update
@@ -158,7 +159,7 @@ async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     set_source(SourceInsert(
         context.chat_data[SOURCE_ID],
-        account.user_id,
+        account.api_id,
         context.chat_data[SOURCE_TITLE],
         context.chat_data[SOURCE_DISPLAY],
         context.chat_data[SOURCE_BIAS],
@@ -174,7 +175,7 @@ async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     await update.message.reply_text(
         f"Kanal '{context.chat_data[SOURCE_TITLE]}' wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source.\n\n{joining}")
 
-    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'} [{update.message.from_user.id}]")
+    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'} {update.message.from_user.id}")
 
     return ConversationHandler.END
 
@@ -197,16 +198,19 @@ add_source_handler = ConversationHandler(
     fallbacks=cancel_handler,
 )
 
-async def handle_join(update: Update, context: ContextTypes.DEFAULT_TYPE) :
+async def handle_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.message.text.split(" ")[1:]
-    
+    logging.info(f"handling nm join. args: {args}")
+
     if len(args) < 3:
         await update.message.reply_text("Arguments required:\n\n1. Joined Chat ID\n2. By User ID\n3. Result")
+        logging.error("handling nm join. missing args.")
         return
 
     joined_chat = args[0]
     joined_by = args[1]
     joined_result = args[2]
-    
+
     await context.bot.send_message(joined_by, f"Tried joining Chat: {joined_chat}\n---\nResult: {joined_result}")
+    logging.info(f"handling nm join. {joined_chat} {joined_by} - RESULT: {joined_result}")
     

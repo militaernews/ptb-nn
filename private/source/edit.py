@@ -81,7 +81,7 @@ def change_overview(context: CallbackContext) -> str:
            "Editierbar für @nn_sources:\n\n" \
            f"🔸 Bewertung: <code>{get_rating(context)}</code>\n\n" \
            f"🔸 Beschreibung: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>\n\n" \
-           f"🔸 Detail Nachricht: {get_detail(context)}\n\n" \
+           f"🔸 Detail Nachricht: <code>{get_detail(context)}</code>\n\n" \
            "<i>Drücke /save um die Änderungen zu speichern oder /cancel um alles abzubrechen.</i>"
 
 
@@ -268,7 +268,7 @@ async def clear_source_bias(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_rating(update: Update, context: CallbackContext) -> int:
-    keyboard = list()
+    keyboard = []
 
     rating = ""
     for i in range(5):

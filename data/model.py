@@ -32,7 +32,7 @@ class Source:
 @dataclass
 class SourceInsert:
     channel_id: int
-    account_id: int
+    api_id: int
     channel_name: str
     display_name: Optional[str] = None
     bias: Optional[str] = None
