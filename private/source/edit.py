@@ -7,7 +7,7 @@ from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, M
 
 from config import ADMINS
 from data.db import get_source, get_destinations, get_accounts, update_source
-from data.model import Source
+from data.model import Source, Account
 from private.common import text_filter, cancel_handler
 
 SOURCE_INVITE = "edit_source_invite"
@@ -40,7 +40,7 @@ def get_destination(context: CallbackContext) -> str | None:
     return context.chat_data[DESTINATIONS][context.chat_data[SOURCE_DESTINATION]]
 
 
-def get_account(context: CallbackContext) -> str | None:
+def get_account(context: CallbackContext) -> Account | None:
     if context.chat_data[SOURCE_API] is None:
         return None
     
@@ -68,16 +68,18 @@ def get_detail(context: CallbackContext) -> str | None:
 
 
 def change_overview(context: CallbackContext) -> str:
+    account_name = get_account(context).name if get_account(context) is not None  else None
+
     return "✏️ Bearbeiten der Quelle\n\n" \
            f"— title: <code>{context.chat_data[SOURCE_TITLE]}</code>\n\n" \
            f"— chat_id: <code>{context.chat_data[SOURCE_ID]}</code>\n\n" \
-           f"— username: <code>{context.chat_data[SOURCE_USERNAME]}</code>\n\n" \
+           f"— username: <code>{context.chat_data[SOURCE_USERNAME]}</code>\n\n\n" \
            "Editierbar für News:\n\n" \
            f"🔹 Einladungshash: <code>{context.chat_data[SOURCE_INVITE]}</code>\n\n" \
            f"🔹 Anzeigename: <code>{context.chat_data[SOURCE_DISPLAY]}</code>\n\n" \
            f"🔹 Voreingenommenheit: <code>{context.chat_data[SOURCE_BIAS]}</code>\n\n" \
            f"🔹 Ausgabekanal: <code>{get_destination(context)}</code>\n\n" \
-           f"🔹 Account: <code>{get_account(context)}</code>\n\n" \
+           f"🔹 Account: <code>{account_name}</code>\n\n\n" \
            "Editierbar für @nn_sources:\n\n" \
            f"🔸 Bewertung: <code>{get_rating(context)}</code>\n\n" \
            f"🔸 Beschreibung: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>\n\n" \
@@ -404,15 +406,16 @@ async def edit_source_api(update: Update, context: CallbackContext) -> int:
     keyboard = []
 
     for k, v in context.chat_data[ACCOUNTS].items():
-
+        v = v.name
         if k == context.chat_data[SOURCE_API]:
             v = f"✅ {v}"
 
         keyboard.append([InlineKeyboardButton(v, callback_data=f"{SOURCE_API}_{k}")])
 
+    account_name = get_account(context).name if get_account(context) is not None  else None
     await update.callback_query.edit_message_text(
         "Wähle den Account der Nachrichten aus diesem Kanal lesen soll. Hierzu muss der Account im entsprechenden Kanal Mitglied sein!  Mit /empty kannst du ihn leeren.\n\n"
-        f"Zwischengespeichert ist aktuell: <code>{get_account(context)}</code>",
+        f"Zwischengespeichert ist aktuell: <code>{account_name}</code>",
 
         reply_markup=InlineKeyboardMarkup(
 

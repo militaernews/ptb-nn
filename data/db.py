@@ -40,7 +40,7 @@ def get_destination_ids() -> [int]:
 def set_source(source: SourceInsert):
     execute_db_operation(
         "INSERT INTO sources(channel_id,api_id,channel_name,display_name,bias,invite,username) VALUES (%s,%s, %s,%s,%s,%s,%s)",
-        (source.channel_id, source.channel_name, source.display_name, source.bias, source.invite, source.username))
+        (source.channel_id, source.api_id, source.channel_name, source.display_name, source.bias, source.invite, source.username))
 
 
 def update_source(source: Source):
@@ -75,6 +75,6 @@ def get_footer_by_channel_id(channel_id: int) -> str:
     return res[0] if res else None
 
 def get_free_account_id ()-> Account:
-    res = execute_db_operation("SELECT * FROM Account WHERE user_id IN (    SELECT account_id    FROM Source    GROUP BY account_id    HAVING COUNT(*) < 450);", fetch="one")
+    res = execute_db_operation("SELECT * FROM accounts WHERE api_id IN (    SELECT api_id    FROM sources    GROUP BY api_id    HAVING COUNT(*) < 450);", fetch="one")
     logging.info(f"free account id: {res}")
-    return res[0]
+    return res
