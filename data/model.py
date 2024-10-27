@@ -27,6 +27,7 @@ class Source:
     rating: Optional[int] = None
     detail_id: Optional[int] = None
     is_active: bool = False
+    is_spread : bool = True
 
 
 @dataclass
