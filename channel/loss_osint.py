@@ -118,8 +118,10 @@ def export_svg(svg: str, filename: str):
 def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
     if new == 0:
         new_loss = ""
-    else:
+    elif new > 0:
         new_loss = f'<tspan style="fill:#ffd42a">+{format_number(new)}</tspan>'
+    else:
+        new_loss = f'<tspan style="fill:#AFE1AF">{format_number(new)}</tspan>'
 
     return f""" 
 
@@ -219,7 +221,7 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
 
     return text
 
@@ -298,7 +300,7 @@ async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
 
     create_svg(totals_today, diff_loss,  display_date)
 
-    last_id = context.bot_data.get("last_loss_id_2", 1)
+    last_id = context.bot_data.get("last_loss_id_2", 71462)
     text = loss_text(display_date, days, totals_today, diff_loss, {}, last_id)
 
     with open("osint_loss.png", "rb") as f:

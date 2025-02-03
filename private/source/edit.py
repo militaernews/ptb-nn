@@ -36,7 +36,7 @@ back_keyboard = InlineKeyboardMarkup([back_button])
 def get_destination(context: CallbackContext) -> str | None:
     if context.chat_data[SOURCE_DESTINATION] is None:
         return None
-    
+
     context.chat_data[DESTINATIONS] = get_destinations()
     return context.chat_data[DESTINATIONS][context.chat_data[SOURCE_DESTINATION]]
 
@@ -44,7 +44,7 @@ def get_destination(context: CallbackContext) -> str | None:
 def get_account(context: CallbackContext) -> Account | None:
     if context.chat_data[SOURCE_API] is None:
         return None
-    
+
     context.chat_data[ACCOUNTS] = get_accounts()
     print("accounts", context.chat_data[ACCOUNTS], context.chat_data[SOURCE_API],
           type(context.chat_data[SOURCE_API]))
@@ -54,7 +54,7 @@ def get_account(context: CallbackContext) -> Account | None:
 def get_rating(context: CallbackContext) -> str | None:
     if context.chat_data[SOURCE_RATING] is None:
         return None
-    
+
     print("rating", context.chat_data[SOURCE_RATING],
           type(context.chat_data[SOURCE_RATING]))
     return "".join("⭐️" for _ in range(context.chat_data[SOURCE_RATING]))
@@ -69,7 +69,7 @@ def get_detail(context: CallbackContext) -> str | None:
 
 
 def change_overview(context: CallbackContext) -> str:
-    account_name = get_account(context).name if get_account(context) is not None  else None
+    account_name = get_account(context).name if get_account(context) is not None else None
 
     return "✏️ Bearbeiten der Quelle\n\n" \
            f"— title: <code>{context.chat_data[SOURCE_TITLE]}</code>\n\n" \
@@ -79,15 +79,15 @@ def change_overview(context: CallbackContext) -> str:
            f"🔹 Einladungshash: <code>{context.chat_data[SOURCE_INVITE]}</code>\n\n" \
            f"🔹 Anzeigename: <code>{context.chat_data[SOURCE_DISPLAY]}</code>\n\n" \
            f"🔹 Voreingenommenheit: <code>{context.chat_data[SOURCE_BIAS]}</code>\n\n" \
-           f"🔹 Ausgabekanal: <code>{get_destination(context)}</code>\n\n" \       
-    f"🔹 Tracking der Quell-Posts: {'✅' if context.chat_data[SOURCE_ACTIVE] else ''}\n\n" \
-    f"🔹 Posten der Quell-Posts: {'✅' if context.chat_data[SOURCE_SPREAD] else ''}\n\n" \
+           f"🔹 Ausgabekanal: <code>{get_destination(context)}</code>\n\n" \
+           f"🔹 Tracking der Quell-Posts: {'✅' if context.chat_data[SOURCE_ACTIVE] else '✖️'}\n\n" \
+           f"🔹 Posten der Quell-Posts: {'✅' if context.chat_data[SOURCE_SPREAD] else '✖️'}\n\n" \
            f"🔹 Account: <code>{account_name}</code>\n\n\n" \
            "Editierbar für @nn_sources:\n\n" \
            f"🔸 Bewertung: <code>{get_rating(context)}</code>\n\n" \
            f"🔸 Beschreibung: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>\n\n" \
            f"🔸 Detail Nachricht: <code>{get_detail(context)}</code>\n\n" \
-    "<i>Drücke /save um die Änderungen zu speichern oder /cancel um alles abzubrechen.</i>"
+           "<i>Drücke /save um die Änderungen zu speichern oder /cancel um alles abzubrechen.</i>"
 
 
 def change_keyboard(context: CallbackContext) -> InlineKeyboardMarkup:
@@ -113,11 +113,11 @@ def change_keyboard(context: CallbackContext) -> InlineKeyboardMarkup:
     spread_text = "✅ Posten" if context.chat_data[SOURCE_SPREAD] else "✖️ nur Backup"
     last_keyboard = [InlineKeyboardButton(spread_text, callback_data=SOURCE_SPREAD)]
 
-    active_text = "✅ Aktiv" if context.chat_data[SOURCE_ACTIVE] else "✖️ Inaktiv"
-    
+    active_text = "✅ Tracking" if context.chat_data[SOURCE_ACTIVE] else "✖️ Inaktiv"
+
     if context.chat_data[SOURCE_API] and context.chat_data[SOURCE_DESTINATION] is not None:
-        last_keyboard.append([InlineKeyboardButton(active_text, callback_data=SOURCE_ACTIVE)])
-        
+        last_keyboard.append(InlineKeyboardButton(active_text, callback_data=SOURCE_ACTIVE))
+
     keyboard.append(last_keyboard)
 
     return InlineKeyboardMarkup(keyboard)
@@ -148,6 +148,7 @@ async def edit_source(update: Update, context: CallbackContext) -> int:
     context.chat_data[SOURCE_DESCRIPTION] = None
     context.chat_data[SOURCE_DETAIL] = None
     context.chat_data[SOURCE_API] = None
+    context.chat_data[SOURCE_SPREAD] = False
     context.chat_data[SOURCE_ACTIVE] = False
     context.chat_data[ACCOUNTS] = None
     context.chat_data[DESTINATIONS] = None
@@ -158,9 +159,8 @@ async def edit_source(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_channel(update: Update, context: CallbackContext) -> int:
-
     source: MessageOrigin = update.message.forward_origin
-    if source  is None:
+    if source is None:
         await update.message.reply_text("fwd-chat-id is None")
         return ConversationHandler.END
 
@@ -169,7 +169,7 @@ async def edit_source_channel(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
     source: MessageOriginChannel = source
-    source_id =source.chat.id
+    source_id = source.chat.id
 
     result = get_source(source_id)
 
@@ -189,6 +189,7 @@ async def edit_source_channel(update: Update, context: CallbackContext) -> int:
     context.chat_data[SOURCE_DESCRIPTION] = result.description
     context.chat_data[SOURCE_DETAIL] = result.detail_id
     context.chat_data[SOURCE_API] = result.api_id
+    context.chat_data[SOURCE_ACTIVE] = result.is_spread
     context.chat_data[SOURCE_ACTIVE] = result.is_active
 
     await update.message.reply_text(change_overview(context), reply_markup=change_keyboard(context))
@@ -342,9 +343,7 @@ async def clear_source_detail(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_description(update: Update, context: CallbackContext) -> int:
-    await update.callback_query.edit_message_text("Beschreibe in 750 Zeichen was dieser Kanal macht.\n\n" \
-                                                  "Zum entfernen tippe einfach /empty\n\n" \
-                                                  f"Zwischengespeichert ist aktuell: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>",
+    await update.callback_query.edit_message_text(f"Beschreibe in 750 Zeichen was dieser Kanal macht.\n\nZum entfernen tippe einfach /empty\n\nZwischengespeichert ist aktuell: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>",
 
                                                   reply_markup=back_keyboard)
     await update.callback_query.answer()
@@ -420,7 +419,7 @@ async def edit_source_api(update: Update, context: CallbackContext) -> int:
 
         keyboard.append([InlineKeyboardButton(v, callback_data=f"{SOURCE_API}_{k}")])
 
-    account_name = get_account(context).name if get_account(context) is not None  else None
+    account_name = get_account(context).name if get_account(context) is not None else None
     await update.callback_query.edit_message_text(
         "Wähle den Account der Nachrichten aus diesem Kanal lesen soll. Hierzu muss der Account im entsprechenden Kanal Mitglied sein!  Mit /empty kannst du ihn leeren.\n\n"
         f"Zwischengespeichert ist aktuell: <code>{account_name}</code>",
@@ -449,12 +448,12 @@ async def clear_source_api(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_spread(update: Update, context: CallbackContext) -> int:
-
     context.chat_data[SOURCE_SPREAD] = not context.chat_data[SOURCE_SPREAD]
 
     await update.callback_query.edit_message_reply_markup(change_keyboard(context))
     await update.callback_query.answer()
     return SELECT_EDIT
+
 
 async def edit_source_active(update: Update, context: CallbackContext) -> int:
     if context.chat_data[SOURCE_API] is not None:
@@ -478,6 +477,7 @@ async def save_edit_source(update: Update, context: CallbackContext) -> int:
         description=context.chat_data[SOURCE_DESCRIPTION],
         rating=context.chat_data[SOURCE_RATING],
         detail_id=context.chat_data[SOURCE_DETAIL],
+        is_spread=context.chat_data[SOURCE_SPREAD],
         is_active=context.chat_data[SOURCE_ACTIVE]
     )
 
