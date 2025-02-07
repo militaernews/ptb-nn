@@ -1,6 +1,6 @@
 import logging
 from traceback import format_exc
-from typing import Optional, Dict
+from typing import Optional, Dict,List
 
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
@@ -30,7 +30,7 @@ def get_source(channel_id: int) -> Optional[Source]:
     return res
 
 
-def get_destination_ids() -> [int]:
+def get_destination_ids() -> List[int]:
     res = execute_db_operation("select channel_id from destinations;", fetch="all")
     ids = [item.channel_id for item in res]
     logging.info(f"destination ids: {ids}")

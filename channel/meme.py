@@ -3,6 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 
+import config
 from constant import FOOTER_MEME
 
 
@@ -48,6 +49,12 @@ async def post_text_meme_nx(update: Update, _: CallbackContext):
 
 async def format_meme_footer(original_text: str) -> str:
     return f"{original_text}{FOOTER_MEME}"
+
+async def repost_forward(update: Update, context: CallbackContext):
+    if update.channel_post.forward_origin.USER or update.channel_post.forward_origin.HIDDEN_USER:
+
+        await update.channel_post.copy(config.CHANNEL_MEME,caption=await format_meme_footer(update.channel_post.caption))
+        await update.channel_post.delete()
 
 
 async def append_buttons_news(update: Update, context: CallbackContext):
