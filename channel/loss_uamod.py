@@ -11,7 +11,7 @@ from telegram.ext import ContextTypes
 
 import config
 import constant
-
+from util.helper import export_svg
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
@@ -45,7 +45,7 @@ LOSS_STOCKPILE = {
     'personnel': 1500000,
 }
 
-def export_svg(svg: str, filename: str):
+def export_svg2(svg: str, filename: str):
     logging.info(svg)
 
     input_filename = filename.replace(".png", ".svg")
@@ -179,7 +179,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
 </svg>"""
 
-    export_svg(svg, "uamod_loss.png")
+    export_svg(svg, "uamod_loss")
 
 
 async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):

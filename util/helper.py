@@ -1,7 +1,7 @@
 import logging
-import os.path
+import os
+import subprocess
 
-from resvg_py import svg_to_bytes
 from telegram import Update, User
 from telegram.constants import ChatType
 from telegram.error import TelegramError
@@ -84,8 +84,19 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
 
 def export_svg(svg: str, filename: str):
     logging.info(svg)
-    with open(filename, 'wb') as f:
-        f.write(bytes(svg_to_bytes(svg_string=svg, dpi=300, font_dirs=["../res/fonts"])))
+
+
+
+    with open(f"{filename}.svg", "w", encoding='utf-8')as f:
+        f.write(svg)
+
+    command = fr'./tools/resvg "{filename}.svg" "{filename}.png" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
+    result = subprocess.run(command, stdout=subprocess.PIPE)
+
+    print("---\n\n\n\n\nRESVG: ", result.returncode, result)
+
+
+
 
 
 def read_file(path: str) -> str:

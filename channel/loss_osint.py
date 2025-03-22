@@ -214,7 +214,7 @@ dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchent
 
     print(svg)
 
-    export_svg(svg, "osint_loss.png")
+    export_svg(svg, "osint_loss")
 
 
 def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict, median_losses: dict,
