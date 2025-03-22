@@ -3,7 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from group.bingo import handle_bingo
+from bot.group.bingo import handle_bingo
 
 putin_dict = {
     "️Angriff": "erzwungene Selbstverteidigung",

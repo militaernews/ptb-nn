@@ -161,7 +161,7 @@ cython_debug/
 #.idea/
 
 persistence
-logs
+bot/logs
 loss.png
 field.png
 img

@@ -1,9 +1,9 @@
 import logging
 
-from telegram import Update, MessageOriginUser
+from telegram import Update
 from telegram.ext import CallbackContext
 
-import config
+from bot import config
 
 
 async def cancel(update: Update, _: CallbackContext) :

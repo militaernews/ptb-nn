@@ -9,9 +9,8 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-import config
-import constant
-from util.helper import export_svg
+from bot import config, constant
+from bot.util.helper import export_svg
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",

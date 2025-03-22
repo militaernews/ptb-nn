@@ -1,10 +1,11 @@
 import logging
 
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, filters, MessageHandler, Application
 
-import config
-from constant import FOOTER_MEME
+from bot import config
+from bot.config import NX_MEME
+from bot.constant import FOOTER_MEME
 
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
@@ -54,7 +55,7 @@ async def format_meme_footer(original_text: str) -> str:
 async def repost_forward(update: Update, context: CallbackContext):
     if update.channel_post.forward_origin.USER or update.channel_post.forward_origin.HIDDEN_USER:
 
-        await update.channel_post.copy(config.CHANNEL_MEME,caption=await format_meme_footer(update.channel_post.caption))
+        await update.channel_post.copy(config.CHANNEL_MEME, caption=await format_meme_footer(update.channel_post.caption))
         await update.channel_post.delete()
 
 
@@ -62,3 +63,13 @@ async def append_buttons_news(update: Update, context: CallbackContext):
     text = update.message.text_html_urled or update.message.caption_html_urled
     if text is not None:
         logging.info("Appending buttons")
+
+def register_meme(app:Application):
+    filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
+
+    filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & ~filters.FORWARDED
+    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
+    app.add_handler(
+        MessageHandler(filter_meme & filter_media & ~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
+    app.add_handler(
+        MessageHandler( filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & filters.FORWARDED, repost_forward))

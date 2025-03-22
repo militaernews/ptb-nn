@@ -2,8 +2,8 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext
 
-from config import GROUP_SOURCE
-from data.db import get_source
+from bot.config import GROUP_SOURCE
+from bot.data.db import get_source
 
 
 async def lookup(update: Update, context: CallbackContext):

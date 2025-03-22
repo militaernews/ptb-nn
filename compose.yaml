@@ -1,10 +1,10 @@
 services:
-  ptb-mn:
+  bot:
     build: .
-    container_name: ptb-mn
+    container_name: ptb-nn
     restart: unless-stopped
     env_file:
-      - .env
+      - .env # .env is only read with "compose up"
     volumes:
       - ./bot:/bot
     environment:

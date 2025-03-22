@@ -6,9 +6,9 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
-import config
-from util.helper import get_text2
-from util.regex import JOIN_ID
+from bot import config
+from bot.util.helper import get_text2
+from bot.util.regex import JOIN_ID
 
 share_text = "\n🚨 Nyx News — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle."
 

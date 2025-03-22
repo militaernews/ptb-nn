@@ -12,5 +12,4 @@ yt-dlp==2025.2.19
 #youtube_dl # pip install --upgrade --force-reinstall "git+https://github.com/ytdl-org/youtube-dl.git"
 Pillow==11.1.0
 pandas==2.2.3
-resvg-py
-skia-python
+cairosvg

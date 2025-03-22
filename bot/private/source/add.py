@@ -5,10 +5,10 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
-from config import ADMINS
-from data.db import get_source, set_source, get_free_account_id
-from data.model import SourceInsert
-from private.common import text_filter, cancel_handler
+from bot.config import ADMINS
+from bot.data.db import get_source, set_source, get_free_account_id
+from bot.data.model import SourceInsert
+from bot.private.common import text_filter, cancel_handler
 
 SOURCE_INVITE = "new_source_invite"
 SOURCE_USERNAME = "new_source_username"

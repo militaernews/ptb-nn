@@ -1,31 +1,24 @@
 import contextlib
 import logging
-import os
-import sys
-from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
 from datetime import datetime, timedelta
+from os import path, makedirs
 from typing import Final
 from warnings import filterwarnings
 
-from telegram import LinkPreviewOptions
 from telegram.constants import ParseMode
-from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, PicklePersistence, \
-    ChatJoinRequestHandler, InlineQueryHandler, CallbackQueryHandler
+from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, CommandHandler, ChatJoinRequestHandler, \
+    InlineQueryHandler, CallbackQueryHandler
 from telegram.warnings import PTBUserWarning
 
-import config
-
-#from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
+# from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.loss_osint import get_osint_losses, setup_osint_crawl
 from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
-from channel.meme import post_media_meme_nx, post_text_meme_nx, repost_forward
-from channel.ukraine_russia import append_footer_single, FOOTER_UA_RU, append_footer_text
-from config import NX_MEME, TELEGRAM, ADMINS, ADMIN_GROUP
-from constant import FOOTER_MEME
+from channel.meme import register_meme
+from channel.ukraine_russia import register_ua_ru
+from config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
 from data.db import get_destination_ids, get_accounts
 from group.bingo import bingo_field, reset_bingo
-from group.command import donbass, maps, loss, peace, genozid, stats, setup, support, channels, admin, short, cia, \
-    mimimi, sofa, bot, start, inline_query, unwarn_user, warn_user,report_user
+from group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
 from group.dictionary import handle_other_chats
 from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
@@ -35,11 +28,11 @@ from private.source.add import add_source_handler, handle_join
 from private.source.edit import edit_source_handler
 from private.source.lookup import lookup
 
-filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
-
 
 def add_logging():
-    if config.CONTAINER:
+    filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
+
+    if CONTAINER:
         logging.basicConfig(
             format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
             encoding="utf-8",
@@ -48,13 +41,13 @@ def add_logging():
             datefmt='%Y-%m-%d %H:%M:%S',
             handlers=[
                 logging.StreamHandler(),
-           #     logging.FileHandler('logs/log')
+                #     logging.FileHandler('logs/log')
             ]
         )
 
     else:
-        log_filename: Final[str] = rf"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
-        os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+        log_filename: Final[str] = rf"../logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
+        makedirs(path.dirname(log_filename), exist_ok=True)
         logging.basicConfig(
             format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
             encoding="utf-8",
@@ -65,10 +58,6 @@ def add_logging():
 
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-
-def setup_event_loop_policy():
-    if sys.version_info >= (3, 8) and sys.platform.lower().startswith("win"):
-        set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 
 def main():
@@ -81,49 +70,18 @@ def main():
 
     app.add_handler(
         ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
-    app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=config.UG_LZ, block=False))
+    app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=UG_LZ, block=False))
     app.add_handler(CallbackQueryHandler(accept_rules_ug, r"ugreq_\d+"))
     app.add_handler(CallbackQueryHandler(accept_request_ug, r"ugyes_\d+_\d+"))
     app.add_handler(CallbackQueryHandler(decline_request_ug, r"ugno_\d+_\d+"))
 
-    filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
-
-    filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
-    app.add_handler(
-        MessageHandler(filter_meme & filter_media & ~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
-    app.add_handler(
-        MessageHandler( filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & filters.FORWARDED, repost_forward))
-
-    filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=config.CHANNEL_UA_RU) & ~filters.FORWARDED
-    app.add_handler(
-        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU) , append_footer_single))
-
-    filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
- ###   app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
-    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
-
-
+    register_meme(app)
+    register_ua_ru(app)
+    register_commands(app)
 
     app.add_handler(InlineQueryHandler(inline_query))
 
-    app.add_handler(CommandHandler("maps", maps))
-    app.add_handler(CommandHandler("donbass", donbass))
-    app.add_handler(CommandHandler("loss", loss))
-    app.add_handler(CommandHandler("stats", stats))
-    app.add_handler(CommandHandler("short", short))
-    app.add_handler(CommandHandler("peace", peace))
-    app.add_handler(CommandHandler("channels", channels))
-    app.add_handler(CommandHandler("support", support))
-    app.add_handler(CommandHandler("genozid", genozid))
 
-    app.add_handler(CommandHandler("sofa", sofa))
-    app.add_handler(CommandHandler("bot", bot))
-    app.add_handler(CommandHandler("mimimi", mimimi))
-    app.add_handler(CommandHandler("cia", cia))
-
-    app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
-    app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
 
     app.add_handler(add_source_handler)
     app.add_handler(edit_source_handler)
@@ -135,7 +93,7 @@ def main():
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
-    app.add_handler(MessageHandler(filters.Chat(chat_id=config.ADMIN_GROUPS.keys()) & filters.Regex("^@admin"), admin))
+    app.add_handler(MessageHandler(filters.Chat(chat_id=ADMIN_GROUPS.keys()) & filters.Regex("^@admin"), admin))
 
     #  app.add_handler(MessageHandler(filters.Regex(YT_PATTERN) & ~filters.ChatType.CHANNEL, get_youtube_video))
 
@@ -167,7 +125,4 @@ def main():
 
 if __name__ == "__main__":
     add_logging()
-    # setup_event_loop_policy()
-
-    with contextlib.suppress(KeyboardInterrupt):
-        main()
+    main()

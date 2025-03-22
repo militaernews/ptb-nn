@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import logging
 import re
@@ -10,8 +9,8 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-import config
-from constant import FOOTER_UA_RU
+from bot import config
+from bot.constant import FOOTER_UA_RU
 
 #import constant
 

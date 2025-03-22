@@ -1,14 +1,14 @@
 import logging
 import os
-import subprocess
 
+from cairosvg import svg2png
 from telegram import Update, User
 from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from config import MSG_REMOVAL_PERIOD, LOG_GROUP
-from constant import FOOTER
+from bot.config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from bot.constant import FOOTER
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
@@ -82,18 +82,21 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
         await log_error(context, update, file_name, e)
 
 
-def export_svg(svg: str, filename: str):
+def export_svg(svg: str, filename: str,width=1400, height=1200):
     logging.info(svg)
 
+    params = {}
+    if width:
+        params['width'] = width
+    if height:
+        params['height'] = height
 
-
-    with open(f"{filename}.svg", "w", encoding='utf-8')as f:
-        f.write(svg)
-
-    command = fr'./tools/resvg "{filename}.svg" "{filename}.png" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
-    result = subprocess.run(command, stdout=subprocess.PIPE)
-
-    print("---\n\n\n\n\nRESVG: ", result.returncode, result)
+    # Convert and save to file
+    svg2png(
+        bytestring=svg.encode('utf-8'),
+        write_to=filename,
+        **params
+    )
 
 
 

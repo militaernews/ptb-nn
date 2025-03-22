@@ -1,10 +1,10 @@
 import logging
 
 from telegram import Update
-from telegram.ext import ContextTypes, CallbackContext
+from telegram.ext import ContextTypes, CallbackContext, filters, Application, MessageHandler
 
-from config import CHANNEL_UA_RU
-from constant import FOOTER_UA_RU
+from bot.config import CHANNEL_UA_RU
+from bot.constant import FOOTER_UA_RU
 
 
 async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -61,3 +61,14 @@ async def append_footer_mg(context: CallbackContext):
         await context.bot.edit_message_caption(CHANNEL_UA_RU, posts[0], caption=context.job.data["text"] + FOOTER_UA_RU)
     except Exception as e:
         logging.exception(f"Error editing mediagroup text :: {e}")
+
+def register_ua_ru(app:Application):
+    filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
+    filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=CHANNEL_UA_RU) & ~filters.FORWARDED
+
+    app.add_handler(
+        MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU), append_footer_single))
+
+    filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
+    ###   app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
+    app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))

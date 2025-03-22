@@ -1,14 +1,16 @@
 import logging
 from uuid import uuid4
 
+import requests
 from telegram import Update, BotCommandScopeChat, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton, \
     InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, Application, CommandHandler, filters
 from telegram.helpers import mention_html
 
-import config
-from util.helper import reply_photo, reply_html
+from bot import config
+from bot.config import ADMINS
+from bot.util.helper import reply_photo, reply_html
 
 
 async def setup(update: Update, context: CallbackContext):
@@ -241,3 +243,21 @@ async def report_user(update: Update, _: CallbackContext):
         await update.message.reply_to_message.reply_text(
             f"Hey {mention(update)}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
 
+def register_commands(app:Application):
+    app.add_handler(CommandHandler("maps", maps))
+    app.add_handler(CommandHandler("donbass", donbass))
+    app.add_handler(CommandHandler("loss", loss))
+    app.add_handler(CommandHandler("stats", stats))
+    app.add_handler(CommandHandler("short", short))
+    app.add_handler(CommandHandler("peace", peace))
+    app.add_handler(CommandHandler("channels", channels))
+    app.add_handler(CommandHandler("support", support))
+    app.add_handler(CommandHandler("genozid", genozid))
+
+    app.add_handler(CommandHandler("sofa", sofa))
+    app.add_handler(CommandHandler("bot", bot))
+    app.add_handler(CommandHandler("mimimi", mimimi))
+    app.add_handler(CommandHandler("cia", cia))
+
+    app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
+    app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
