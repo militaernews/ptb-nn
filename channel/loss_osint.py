@@ -11,6 +11,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 import config
+from constant import FOOTER_UA_RU
 
 #import constant
 
@@ -116,6 +117,7 @@ def export_svg(svg: str, filename: str):
 
 
 def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
+    print(f"loss: {new} - {total}")
     if new == 0:
         new_loss = ""
     elif new > 0:
@@ -130,7 +132,7 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
 
 def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dict[str,int]], day: str):
     field_size = 4
-    all_width = 1300
+    all_width = 1280
     min_x = -all_width/2
     coat_size = 300
     margin = 64
@@ -210,7 +212,7 @@ dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchent
 
     svg += "</svg>"
 
-   # print(svg)
+    print(svg)
 
     export_svg(svg, "osint_loss.png")
 
@@ -221,7 +223,7 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{constant.FOOTER_UA_RU}"
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{FOOTER_UA_RU}"
 
     return text
 

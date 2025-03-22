@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Final
 
 from dotenv import load_dotenv
 
@@ -32,3 +33,6 @@ ADMIN_GROUPS = {
     -1001618190222: -1001895565760,  # UA_Krieg
     -1002104916595: ADMIN_GROUP,  # Israel
 }
+
+CONTAINER: Final[bool] = bool(os.getenv('CONTAINER', False), )
+

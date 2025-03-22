@@ -4,6 +4,7 @@ import os
 import sys
 from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
 from datetime import datetime, timedelta
+from typing import Final
 from warnings import filterwarnings
 
 from telegram import LinkPreviewOptions
@@ -14,7 +15,7 @@ from telegram.warnings import PTBUserWarning
 
 import config
 
-from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
+#from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.loss_osint import get_osint_losses, setup_osint_crawl
 from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
 from channel.meme import post_media_meme_nx, post_text_meme_nx, repost_forward
@@ -37,16 +38,32 @@ from private.source.lookup import lookup
 filterwarnings(action="ignore", message=r".*CallbackQueryHandler", category=PTBUserWarning)
 
 
-def setup_logging():
-    log_filename = f"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
-    os.makedirs(os.path.dirname(log_filename), exist_ok=True)
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
-        encoding="utf-8",
-        filename=log_filename,
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+def add_logging():
+    if config.CONTAINER:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
+            encoding="utf-8",
+
+            level=logging.INFO,
+            datefmt='%Y-%m-%d %H:%M:%S',
+            handlers=[
+                logging.StreamHandler(),
+           #     logging.FileHandler('logs/log')
+            ]
+        )
+
+    else:
+        log_filename: Final[str] = rf"./logs/{datetime.now().strftime('%Y-%m-%d/%H-%M-%S')}.log"
+        os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-5s %(funcName)-20s [%(filename)s:%(lineno)d]: %(message)s",
+            encoding="utf-8",
+            filename=log_filename,
+            level=logging.INFO,
+            datefmt='%Y-%m-%d %H:%M:%S',
+        )
+
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def setup_event_loop_policy():
@@ -83,7 +100,7 @@ def main():
         MessageHandler(filter_ru_ua & filter_media & ~filters.CaptionRegex(FOOTER_UA_RU) , append_footer_single))
 
     filter_ru_ua_text = filter_ru_ua & ~filters.Regex(FOOTER_UA_RU) & filters.TEXT
-    app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
+ ###   app.add_handler(MessageHandler(filter_ru_ua_text & filters.Regex(PATTERN_TWITTER), handle_twitter))
     app.add_handler(MessageHandler(filter_ru_ua_text, append_footer_text))
 
 
@@ -149,7 +166,7 @@ def main():
 
 
 if __name__ == "__main__":
-    setup_logging()
+    add_logging()
     # setup_event_loop_policy()
 
     with contextlib.suppress(KeyboardInterrupt):

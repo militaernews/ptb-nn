@@ -80,10 +80,10 @@ def format_number(number: int):
 
 def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: str):
     field_size = 2
-    all_width = 1342
+    all_width = 1400
     margin = 24
 
-    heading_size = 46
+    heading_size = 42
     heading_space = margin * 2.5 + heading_size
 
     items = list(chunks(total_losses, field_size))
@@ -111,7 +111,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
 
      <stop offset="0%" style="stop-color:rgb(5,45,31);stop-opacity:1.00" />
-          <stop offset="100%" style="stop-color:rgb(23,46,41);stop-opacity:1.00" />
+          <stop offset="100%" style="stop-color:rgb(184, 73, 39);stop-opacity:1.00" />
 
     </linearGradient>
   </defs>
@@ -122,7 +122,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             text-anchor="middle"
             font-size="{heading_size}"
             fill="{heading_color}"
-            font-family="Bahnschrift">Russische Verluste laut ukrainischem Verteidigungsministerium - {day}</text>
+            font-family="Bahnschrift">Verluste Russlands laut Verteidigungsministerium Ukraine - {day}</text>
     """
 
     logging.info("------")
@@ -164,7 +164,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
                 percentage = f"{v * 100 / LOSS_STOCKPILE[k]:.2f}".replace(".", ",")
                 svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
-                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="lightgrey" dominant-baseline="top">{percentage}%</text>"""
+                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="#D3D3D3" dominant-baseline="text-top">{percentage}%</text>"""
 
     svg += """
 

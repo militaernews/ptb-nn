@@ -31,18 +31,21 @@ async def remove_element_by_xpath(xpath):
 
 async def get_screenshot(url: str, screenshot_path: str):
     logging.info(f"Try getting {url}")
-    driver.get(url)
+    try:
+        driver.get(url)
 
-    await remove_element_by_xpath('/html/body/div[1]/div/div/div[1]/div')
-    await asyncio.sleep(10)
-    await remove_element_by_xpath(
-        '/html/body/div[1]/div/div/div[2]/main/div/div/div/div/div/section/div/div/div[1]/div/div/article/div/div/div[2]/div[2]/div/div/div[2]')
+        await remove_element_by_xpath('/html/body/div[1]/div/div/div[1]/div')
+        await asyncio.sleep(10)
+        await remove_element_by_xpath(
+            '/html/body/div[1]/div/div/div[2]/main/div/div/div/div/div/section/div/div/div[1]/div/div/article/div/div/div[2]/div[2]/div/div/div[2]')
 
-    driver.save_screenshot(screenshot_path)
+        driver.save_screenshot(screenshot_path)
 
-    with Image.open(screenshot_path) as img:
-        w, h = img.size
-        img.crop((121, 39, w - 81, h)).save(screenshot_path)
+        with Image.open(screenshot_path) as img:
+            w, h = img.size
+            img.crop((121, 39, w - 81, h)).save(screenshot_path)
+    except:
+        logging.error("Crawl failed")
 
 
 async def handle_twitter(update: Update, context: ContextTypes.DEFAULT_TYPE):
