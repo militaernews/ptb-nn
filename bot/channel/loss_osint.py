@@ -1,7 +1,6 @@
 import datetime
 import logging
 import re
-import subprocess
 from itertools import islice
 from typing import Dict
 
@@ -11,13 +10,14 @@ from telegram.ext import ContextTypes
 
 from bot import config
 from bot.constant import FOOTER_UA_RU
+from bot.util.helper import export_svg
 
-#import constant
+# import constant
 
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
-CATEGORIES ={
+CATEGORIES = {
     "TANK": "Kampfpanzer",
     "IFV": "Schützenpanzer",
     "APC": "Transportpanzer",
@@ -65,8 +65,6 @@ COLUMNS = {
     'Mine-Resistant_Ambush_Protected': "AFV",
 }
 
-
-
 STOCKPILE_RU = {
     'tanks': 8168,
     'apv': 26993,
@@ -83,7 +81,7 @@ STOCKPILE_RU = {
 }
 
 
-def get_time(delta:int = 1) -> str:
+def get_time(delta: int = 1) -> str:
     return (datetime.datetime.now() - datetime.timedelta(days=delta)).strftime("%Y.%m.%d")
 
 
@@ -97,22 +95,6 @@ def chunks(data, size):
 
 def format_number(number):
     return f"{number:,}".replace(",", " ").replace(".", ",").replace(" ", ".")
-
-def export_svg(svg: str, filename: str):
-    logging.info(svg)
-
-    input_filename = filename.replace(".png", ".svg")
-
-    with open(input_filename, "w", encoding='utf-8')as f:
-        f.write(svg)
-
-    command = fr'./tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
-    result = subprocess.run(command, stdout=subprocess.PIPE)
-
-    print("---\n\n\n\n\nRESVG: ", result.returncode, result)
-    print(result.returncode)
-
-
 
 
 def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
@@ -129,22 +111,23 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
     <text style="font-size:40px;font-family:Impact;fill:#ffffff;" x="{x}" y="{y}">
 {format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
 
-def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dict[str,int]], day: str):
+
+def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Dict[str, int]], day: str):
     field_size = 4
     all_width = 1280
-    min_x = -all_width/2
+    min_x = -all_width / 2
     coat_size = 300
     margin = 64
     margin_y = 8
 
     heading_size = 110
-    heading_space = margin  + heading_size
+    heading_space = margin + heading_size
 
     items = list(chunks(total_losses, field_size))
-    row_count = len(items*2)
+    row_count = len(items * 2)
     width_cell = (all_width - (field_size + 1) * margin) / field_size
     height_cell = 90
-    all_height = (row_count-1)*margin_y+  (row_count* height_cell) + 2*margin # + heading_space
+    all_height = (row_count - 1) * margin_y + (row_count * height_cell) + 2 * margin  # + heading_space
 
     new_color = "#e8cc00"
     heading_color = "#ffffff"
@@ -177,12 +160,12 @@ def create_svg(total_losses: Dict[str, Dict[str,int]], new_losses: Dict[str, Dic
 <rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
 <rect  fill="url(#gradient)"  height="100%" width="100%" x="{min_x}" y="0" filter="url(#shadow)"  rx="8"  />
 
-<image x="{-all_width/4-coat_size/2}" y="{all_height/2 -coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ru_coat.svg"/>
+<image x="{-all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ru_coat.svg"/>
 
-<image x="{all_width/4-coat_size/2}" y="{all_height/2-coat_size/2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ua_coat.svg" />
+<image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ua_coat.svg" />
 
             <text  style="font-size:48px;font-family:Impact;text-anchor:middle;fill:#ffffff;"
-      x="0" y="{(48+24)+margin}px">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
+      x="0" y="{(48 + 24) + margin}px">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
 dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchentliche geolokalisierte Materialverluste</tspan></text>
     """
 
@@ -200,14 +183,13 @@ dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchent
                 if loss is False:
                     continue
                 svg += create_entry(
-                    int(col * (width_cell + margin) + x_offset +margin),
+                    int(col * (width_cell + margin) + x_offset + margin),
                     int(heading_space + row * (height_cell + margin_y)),
                     total_losses[loss][country],
                     new_losses[loss][country],
                     CATEGORIES[loss]
                 )
         keys.reverse()
-
 
     svg += "</svg>"
 
@@ -227,18 +209,14 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
     return text
 
 
-
-
-
 from typing import Dict
-
 
 
 def extract_losses(now):
     logging.info("---- requesting ---- ")
-    df =read_csv(DATA_SOURCE)
+    df = read_csv(DATA_SOURCE)
     res = df[df['Date'].str.contains(now)]
-   # print(res)
+    # print(res)
 
     san = {"RU": {}, "UA": {}}
     for col, data in res.items():
@@ -270,8 +248,8 @@ def extract_losses(now):
             else:
                 res[COLUMNS[cat]] = {k: v}
 
-
     return res
+
 
 def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
     result = {}
@@ -281,25 +259,25 @@ def diff_dicts(dict1: Dict[str, Dict[str, int]], dict2: Dict[str, Dict[str, int]
             result[outer_key][inner_key] = dict2[outer_key][inner_key] - dict1[outer_key][inner_key]
     return result
 
+
 async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
     now = get_time()
 
     totals_today = extract_losses(now)
 
-  #  print(dumps(totals_today, ensure_ascii=False, sort_keys=True, indent=2, default=str))
+    #  print(dumps(totals_today, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
-    diff_loss = diff_dicts(extract_losses(get_time(8)),totals_today)
+    diff_loss = diff_dicts(extract_losses(get_time(8)), totals_today)
 
-   # print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
-
+    # print(dumps(diff_loss, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 
     print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
     days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
     display_date = datetime.datetime.now().strftime("%d.%m.%Y")
 
-    create_svg(totals_today, diff_loss,  display_date)
+    create_svg(totals_today, diff_loss, display_date)
 
     last_id = context.bot_data.get("last_loss_id_2", 71462)
     text = loss_text(display_date, days, totals_today, diff_loss, {}, last_id)

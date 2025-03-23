@@ -57,42 +57,42 @@ async def accept_join_request(update: Update, context: CallbackContext):
 async def join_request_ug(update: Update, context: CallbackContext):
     await context.bot.send_message(update.chat_join_request.from_user.id,
                                    f"Hey, {update.chat_join_request.from_user.name} ✌️\n\n"
-                                """⚖️ <u>Regeln dieses Forums</u>
-
-1. Inhalte sollen nachgewiesen sein, bspw. durch Bilder/Videos des Ortes. Eine exakte Geolokalisierung nicht nötig, nur wenigstens mit Ortsangabe.
-
-
-2.  Auch eine Verlinkung auf Originalquellen (vorzugsweise offizielle Stellen, Thinktanks) sollte stattfinden. Wünschenswert wäre die Sicherung eines Links mit archive.is oder archive.ph.
-
-
-3. Inhalte haben im Topic zu denen es am besten passt gepostet zu werden. Regions-Topics gehen vor.
-
-
-4. Wenn etwas nur in mehreren Regionen passiert und noch immer ein starker Bezug zu den Regionen vorherrscht, dann ist es nur in einer der Regions-Topics zu posten.
-
-
-5. Reposts gilt es zu vermeiden, sofern diese nicht weitere Informationen liefern oder einen Sachverhalt erklären.
-
-
-6. Bitte nur Inhalte mit engem Bezug zur Ukraine posten. Diese sollten einen größeren Mehrwert an Informationen bieten, mit denen die aktuelle Lage eingeschätzt werden kann.
-
-
-<u>Beispiele für relevante Inhalte</u>
-
-a) Ukraine/Russland nehmen eine größere Stellung ein oder verlieren diese.
-
-b) Ukraine/Russland verlieren/nutzen eine besonders große Menge an Material in einer Richtung binnen weniger Tage.
-
-c) Ukraine/Russland verlieren/nutzen nur in geringer Stückzahl verfügbares an Material.
-
-d) Ukraine/Russland bekommen neue Ausrüstung von ihren Partnern, bzw. die finale Entscheidung dazu fällt.
-
-e) Ein medial sehr präsenter Vorfall ereignet sich (etwa auf dem Niveau der abgeschossenen Il-76) und aufgrund der unklaren Situation sollten Belege zusammengetragen werden.
-
-
-Es geht nicht darum wie ein Newsticker zu fungieren, sondern Informationen zu einem Thema zu sammeln und sich darüber auszutauschen. Diese Gruppe soll nicht das Pendant zu @nyx_news oder @Ukraine_Russland_Krieg_2022 sein. Wer behauptet, der belegt auf Nachfrage.
-
-<b>Bitte fragt dich immer bevor du etwas sendest, ob es wirklich entscheidend und aus Sicht anderer Mitglieder relevant ist.</b>""",
+                                   """⚖️ <u>Regeln dieses Forums</u>
+   
+   1. Inhalte sollen nachgewiesen sein, bspw. durch Bilder/Videos des Ortes. Eine exakte Geolokalisierung nicht nötig, nur wenigstens mit Ortsangabe.
+   
+   
+   2.  Auch eine Verlinkung auf Originalquellen (vorzugsweise offizielle Stellen, Thinktanks) sollte stattfinden. Wünschenswert wäre die Sicherung eines Links mit archive.is oder archive.ph.
+   
+   
+   3. Inhalte haben im Topic zu denen es am besten passt gepostet zu werden. Regions-Topics gehen vor.
+   
+   
+   4. Wenn etwas nur in mehreren Regionen passiert und noch immer ein starker Bezug zu den Regionen vorherrscht, dann ist es nur in einer der Regions-Topics zu posten.
+   
+   
+   5. Reposts gilt es zu vermeiden, sofern diese nicht weitere Informationen liefern oder einen Sachverhalt erklären.
+   
+   
+   6. Bitte nur Inhalte mit engem Bezug zur Ukraine posten. Diese sollten einen größeren Mehrwert an Informationen bieten, mit denen die aktuelle Lage eingeschätzt werden kann.
+   
+   
+   <u>Beispiele für relevante Inhalte</u>
+   
+   a) Ukraine/Russland nehmen eine größere Stellung ein oder verlieren diese.
+   
+   b) Ukraine/Russland verlieren/nutzen eine besonders große Menge an Material in einer Richtung binnen weniger Tage.
+   
+   c) Ukraine/Russland verlieren/nutzen nur in geringer Stückzahl verfügbares an Material.
+   
+   d) Ukraine/Russland bekommen neue Ausrüstung von ihren Partnern, bzw. die finale Entscheidung dazu fällt.
+   
+   e) Ein medial sehr präsenter Vorfall ereignet sich (etwa auf dem Niveau der abgeschossenen Il-76) und aufgrund der unklaren Situation sollten Belege zusammengetragen werden.
+   
+   
+   Es geht nicht darum wie ein Newsticker zu fungieren, sondern Informationen zu einem Thema zu sammeln und sich darüber auszutauschen. Diese Gruppe soll nicht das Pendant zu @nyx_news oder @Ukraine_Russland_Krieg_2022 sein. Wer behauptet, der belegt auf Nachfrage.
+   
+   <b>Bitte fragt dich immer bevor du etwas sendest, ob es wirklich entscheidend und aus Sicht anderer Mitglieder relevant ist.</b>""",
                                    reply_markup=create_inline_keyboard("Gruppe beitreten ➡️",
                                                                        callback_data=f"ugreq_{update.chat_join_request.from_user.id}_{update.chat_join_request.from_user.name}")
                                    )

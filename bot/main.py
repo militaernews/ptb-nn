@@ -1,4 +1,3 @@
-import contextlib
 import logging
 from datetime import datetime, timedelta
 from os import path, makedirs
@@ -24,9 +23,9 @@ from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
 from private.pattern import add_pattern_handler
-from private.source.add import add_source_handler, handle_join
-from private.source.edit import edit_source_handler
-from private.source.lookup import lookup
+from bot.source.add import add_source_handler, handle_join
+from bot.source.edit import edit_source_handler
+from bot.source.lookup import lookup
 
 
 def add_logging():
@@ -59,7 +58,6 @@ def add_logging():
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-
 def main():
     app = ApplicationBuilder().token(TELEGRAM).defaults(
         Defaults(parse_mode=ParseMode.HTML)) \
@@ -81,15 +79,12 @@ def main():
 
     app.add_handler(InlineQueryHandler(inline_query))
 
-
-
     app.add_handler(add_source_handler)
     app.add_handler(edit_source_handler)
     app.add_handler(add_pattern_handler)
 
     for account in get_accounts().values():
-        app.add_handler(CommandHandler("join",handle_join,filters.Chat(account.user_id),has_args=True ))
-
+        app.add_handler(CommandHandler("join", handle_join, filters.Chat(account.user_id), has_args=True))
 
     app.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, lookup))
 
@@ -116,7 +111,7 @@ def main():
     app.add_handler(MessageHandler(
         (filters.TEXT | filters.VIDEO | filters.ANIMATION | filters.PHOTO) & filters.ChatType.PRIVATE & ~filters.User(
             ADMINS), fwd))
-    app.add_handler(MessageHandler(filters.REPLY & filters.Chat(ADMIN_GROUP) ,
+    app.add_handler(MessageHandler(filters.REPLY & filters.Chat(ADMIN_GROUP),
                                    respond_feedback))
 
     print("### Run Local ###")

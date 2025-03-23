@@ -11,7 +11,7 @@ async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYP
     logging.info(f"append footer :: {update}")
 
     if update.channel_post.media_group_id is not None:
-        return #await append_footer_multiple(update,context)
+        return  # await append_footer_multiple(update,context)
 
     original_caption = update.channel_post.caption_html_urled or ""
 
@@ -62,7 +62,8 @@ async def append_footer_mg(context: CallbackContext):
     except Exception as e:
         logging.exception(f"Error editing mediagroup text :: {e}")
 
-def register_ua_ru(app:Application):
+
+def register_ua_ru(app: Application):
     filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
     filter_ru_ua = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=CHANNEL_UA_RU) & ~filters.FORWARDED
 

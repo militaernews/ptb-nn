@@ -1,6 +1,6 @@
 import logging
 from traceback import format_exc
-from typing import Optional, Dict,List
+from typing import Optional, Dict, List
 
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
@@ -40,7 +40,8 @@ def get_destination_ids() -> List[int]:
 def set_source(source: SourceInsert):
     execute_db_operation(
         "INSERT INTO sources(channel_id,api_id,channel_name,display_name,bias,invite,username) VALUES (%s,%s, %s,%s,%s,%s,%s)",
-        (source.channel_id, source.api_id, source.channel_name, source.display_name, source.bias, source.invite, source.username))
+        (source.channel_id, source.api_id, source.channel_name, source.display_name, source.bias, source.invite,
+         source.username))
 
 
 def update_source(source: Source):
@@ -63,8 +64,6 @@ def get_accounts() -> Dict[int, Account]:
     return {a.api_id: a for a in accs}
 
 
-
-
 def set_pattern(channel_id: int, pattern: str):
     execute_db_operation("INSERT INTO bloats(channel_id,pattern) VALUES (%s, %s)", (channel_id, pattern))
 
@@ -74,7 +73,10 @@ def get_footer_by_channel_id(channel_id: int) -> str:
     logging.info(f"{channel_id} - footer: {res}")
     return res[0] if res else None
 
-def get_free_account_id ()-> Account:
-    res = execute_db_operation("SELECT * FROM accounts WHERE api_id IN (    SELECT api_id    FROM sources    GROUP BY api_id    HAVING COUNT(*) < 450);", fetch="one")
+
+def get_free_account_id() -> Account:
+    res = execute_db_operation(
+        "SELECT * FROM accounts WHERE api_id IN (    SELECT api_id    FROM sources    GROUP BY api_id    HAVING COUNT(*) < 450);",
+        fetch="one")
     logging.info(f"free account id: {res}")
     return res

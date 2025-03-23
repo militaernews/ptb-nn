@@ -10,6 +10,8 @@ from telegram.ext import ContextTypes
 from bot.config import MSG_REMOVAL_PERIOD, LOG_GROUP
 from bot.constant import FOOTER
 
+from wand.image import Image
+
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
 
@@ -82,24 +84,20 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
         await log_error(context, update, file_name, e)
 
 
-def export_svg(svg: str, filename: str,width=1400, height=1200):
+def export_svg(svg: str, filename: str, width=1400, height=1200):
     logging.info(svg)
 
-    params = {}
-    if width:
-        params['width'] = width
-    if height:
-        params['height'] = height
+    with Image(blob=svg.encode('utf-8'), format="svg") as image:
+        png_image = image.make_blob("png")
+        with open(f"{filename}.png" ,"wb") as f:
+            f.write(png_image)
 
     # Convert and save to file
     svg2png(
         bytestring=svg.encode('utf-8'),
-        write_to=filename,
-        **params
+        write_to=f"{filename}.png",
+
     )
-
-
-
 
 
 def read_file(path: str) -> str:

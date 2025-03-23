@@ -1,6 +1,5 @@
 import datetime
 import logging
-import subprocess
 from itertools import islice
 from statistics import median
 from typing import Dict
@@ -43,20 +42,6 @@ LOSS_STOCKPILE = {
     'se': 1400,
     'personnel': 1500000,
 }
-
-def export_svg2(svg: str, filename: str):
-    logging.info(svg)
-
-    input_filename = filename.replace(".png", ".svg")
-
-    with open(input_filename, "w", encoding='utf-8')as f:
-        f.write(svg)
-
-    command = fr'./tools/resvg "{input_filename}" "{filename}" --skip-system-fonts --background "#000000" --dpi 300 --font-family "Arial" --use-fonts-dir "./res/fonts"'
-    result = subprocess.run(command, stdout=subprocess.PIPE)
-
-    print("---\n\n\n\n\nRESVG: ", result.returncode, result)
-    print(result.returncode)
 
 
 def get_time() -> str:

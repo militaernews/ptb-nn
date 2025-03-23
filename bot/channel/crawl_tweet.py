@@ -1,8 +1,8 @@
+import asyncio
 import logging
 import re
 from pathlib import Path
 
-import asyncio
 from PIL import Image
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException

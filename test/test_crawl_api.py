@@ -1,4 +1,4 @@
-from channel.loss_osint import create_svg
+from bot.channel.loss_osint import create_svg
 
 create_svg({
     'personnel': 161520, 'tanks': 3492, 'apv': 6799, 'artillery': 2528,

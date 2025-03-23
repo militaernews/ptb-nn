@@ -343,9 +343,10 @@ async def clear_source_detail(update: Update, context: CallbackContext) -> int:
 
 
 async def edit_source_description(update: Update, context: CallbackContext) -> int:
-    await update.callback_query.edit_message_text(f"Beschreibe in 750 Zeichen was dieser Kanal macht.\n\nZum entfernen tippe einfach /empty\n\nZwischengespeichert ist aktuell: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>",
+    await update.callback_query.edit_message_text(
+        f"Beschreibe in 750 Zeichen was dieser Kanal macht.\n\nZum entfernen tippe einfach /empty\n\nZwischengespeichert ist aktuell: <code>{context.chat_data[SOURCE_DESCRIPTION]}</code>",
 
-                                                  reply_markup=back_keyboard)
+        reply_markup=back_keyboard)
     await update.callback_query.answer()
 
     return EDIT_DESCRIPTION

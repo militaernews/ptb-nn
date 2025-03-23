@@ -35,4 +35,3 @@ ADMIN_GROUPS = {
 }
 
 CONTAINER: Final[bool] = bool(os.getenv('CONTAINER', False), )
-

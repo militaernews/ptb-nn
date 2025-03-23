@@ -45,8 +45,6 @@ async def add_source_channel(update: Update, context: CallbackContext) -> int | 
         await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
         return ConversationHandler.END
 
-
-
     result = get_source(source.id)
 
     if result is not None:
@@ -56,7 +54,7 @@ async def add_source_channel(update: Update, context: CallbackContext) -> int | 
 
     context.chat_data[SOURCE_ID] = source.id
     context.chat_data[SOURCE_TITLE] = source_name = source.title
-    context.chat_data[SOURCE_USERNAME] = source_username =source.username
+    context.chat_data[SOURCE_USERNAME] = source_username = source.username
 
     text = f"Passt das so?\n\nID: {source.id}\n\nName: {source_name}"
 
@@ -168,14 +166,13 @@ async def save_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     ))
 
-
-
     joining = f"Ich werde nun versuchen mit dem Account '{account.name}' beizutreten. Bitte einen kurzen Augenblick Geduld."
 
     await update.message.reply_text(
         f"Kanal '{context.chat_data[SOURCE_TITLE]}' wurde in der Datenbank gespeichert. Wenn du ihn überarbeiten willst, dann tippe /edit_source.\n\n{joining}")
 
-    await context.bot.send_message(account.user_id, f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'} {update.message.from_user.id}")
+    await context.bot.send_message(account.user_id,
+                                   f"/join {context.chat_data[SOURCE_INVITE] or f'@{context.chat_data[SOURCE_USERNAME]}'} {update.message.from_user.id}")
 
     return ConversationHandler.END
 
@@ -198,6 +195,7 @@ add_source_handler = ConversationHandler(
     fallbacks=cancel_handler,
 )
 
+
 async def handle_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.message.text.split(" ")[1:]
     logging.info(f"handling nm join. args: {args}")
@@ -213,4 +211,3 @@ async def handle_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(joined_by, f"Tried joining Chat: {joined_chat}\n---\nResult: {joined_result}")
     logging.info(f"handling nm join. {joined_chat} {joined_by} - RESULT: {joined_result}")
-    

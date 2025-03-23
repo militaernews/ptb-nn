@@ -122,7 +122,7 @@ async def support(update: Update, context: CallbackContext):
 
 
 async def admin(update: Update, context: CallbackContext):
-    logging.info(f"admin msg: {update.message}" )
+    logging.info(f"admin msg: {update.message}")
 
     try:
         await update.message.delete()
@@ -228,6 +228,7 @@ async def warn_user(update: Update, context: CallbackContext):
 
         await update.message.reply_to_message.reply_text(warn_text)
 
+
 async def report_user(update: Update, _: CallbackContext):
     await update.message.delete()
 
@@ -243,7 +244,8 @@ async def report_user(update: Update, _: CallbackContext):
         await update.message.reply_to_message.reply_text(
             f"Hey {mention(update)}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
 
-def register_commands(app:Application):
+
+def register_commands(app: Application):
     app.add_handler(CommandHandler("maps", maps))
     app.add_handler(CommandHandler("donbass", donbass))
     app.add_handler(CommandHandler("loss", loss))
