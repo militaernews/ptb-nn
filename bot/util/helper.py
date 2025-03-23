@@ -87,17 +87,18 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
 def export_svg(svg: str, filename: str, width=1400, height=1200):
     logging.info(svg)
 
-    with Image(blob=svg.encode('utf-8'), format="svg") as image:
-        png_image = image.make_blob("png")
-        with open(f"{filename}.png" ,"wb") as f:
-            f.write(png_image)
+    print(svg.encode('utf-8'))
 
-    # Convert and save to file
-    svg2png(
-        bytestring=svg.encode('utf-8'),
-        write_to=f"{filename}.png",
+    with open(f"{filename}.svg", "w", encoding="utf-8") as f:
+        f.write(svg)
 
-    )
+
+    with Image(filename=f"{filename}.svg") as img:
+        img.format = 'png'
+        img.save(filename=f"{filename}.png")
+
+    cairosvg.svg2png(bytestring=svgCode, write_to=outputPath)
+
 
 
 def read_file(path: str) -> str:
