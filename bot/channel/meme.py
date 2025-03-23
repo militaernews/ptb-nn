@@ -3,8 +3,8 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext, filters, MessageHandler, Application
 
-from bot import config
-from bot.config import NX_MEME
+
+from bot.config import NX_MEME, CHANNEL_MEME
 from bot.constant import FOOTER_MEME
 
 
@@ -55,7 +55,7 @@ async def format_meme_footer(original_text: str) -> str:
 
 async def repost_forward(update: Update, context: CallbackContext):
     if update.channel_post.forward_origin.USER or update.channel_post.forward_origin.HIDDEN_USER:
-        await update.channel_post.copy(config.CHANNEL_MEME,
+        await update.channel_post.copy(CHANNEL_MEME,
                                        caption=await format_meme_footer(update.channel_post.caption))
         await update.channel_post.delete()
 

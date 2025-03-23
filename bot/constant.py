@@ -1,5 +1,5 @@
-from config import CHANNEL_UA_RU, NX_MEME
-from data.db import get_footer_by_channel_id
+from bot.config import CHANNEL_UA_RU, NX_MEME
+from bot. data.db import get_footer_by_channel_id
 
 FOOTER_MEME: str = get_footer_by_channel_id(NX_MEME)
 FOOTER_UA_RU: str = get_footer_by_channel_id(CHANNEL_UA_RU)

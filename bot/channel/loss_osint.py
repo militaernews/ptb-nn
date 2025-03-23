@@ -8,7 +8,7 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot import config
+from bot.config import CHANNEL_UA_RU
 from bot.constant import FOOTER_UA_RU
 from bot.util.helper import export_svg
 
@@ -283,7 +283,7 @@ async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     text = loss_text(display_date, days, totals_today, diff_loss, {}, last_id)
 
     with open("osint_loss.png", "rb") as f:
-        msg = await context.bot.send_photo(config.CHANNEL_UA_RU, photo=f, caption=text)
+        msg = await context.bot.send_photo(CHANNEL_UA_RU, photo=f, caption=text)
 
     context.bot_data["last_loss_2"] = now
     context.bot_data["last_loss_id_2"] = msg.id

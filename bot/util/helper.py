@@ -1,7 +1,7 @@
 import logging
 import os
 
-from cairosvg import svg2png
+from resvg_py import svg_to_bytes
 from telegram import Update, User
 from telegram.constants import ChatType
 from telegram.error import TelegramError
@@ -9,8 +9,6 @@ from telegram.ext import ContextTypes
 
 from bot.config import MSG_REMOVAL_PERIOD, LOG_GROUP
 from bot.constant import FOOTER
-
-from wand.image import Image
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
@@ -84,20 +82,18 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
         await log_error(context, update, file_name, e)
 
 
-def export_svg(svg: str, filename: str, width=1400, height=1200):
+def export_svg(svg: str, filename: str):
     logging.info(svg)
 
-    print(svg.encode('utf-8'))
+    encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=["/res/fonts"],
 
-    with open(f"{filename}.svg", "w", encoding="utf-8") as f:
-        f.write(svg)
+                           text_rendering="optimize_legibility"
+                         )
+
+    with open( f"{filename}.png", 'wb') as f:
+        f.write(bytes(encoded))
 
 
-    with Image(filename=f"{filename}.svg") as img:
-        img.format = 'png'
-        img.save(filename=f"{filename}.png")
-
-    cairosvg.svg2png(bytestring=svgCode, write_to=outputPath)
 
 
 

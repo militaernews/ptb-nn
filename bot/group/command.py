@@ -8,8 +8,8 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, Application, CommandHandler, filters
 from telegram.helpers import mention_html
 
-from bot import config
-from bot.config import ADMINS
+
+from bot.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
 from bot.util.helper import reply_photo, reply_html
 
 
@@ -34,7 +34,7 @@ async def setup(update: Update, context: CallbackContext):
         ("warn", "Nutzer verwarnen"),
         ("unwarn", "Verwarnung zurückziehen"),
     ]
-    for chat_id in config.ADMINS:
+    for chat_id in ADMINS:
         try:
             await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
         except BadRequest:  # to ignore chat not found
@@ -144,9 +144,9 @@ async def admin(update: Update, context: CallbackContext):
         else:
             text += update.message.reply_to_message.text_html_urled
 
-        target_group = config.ADMIN_GROUPS[update.message.chat_id]
+        target_group = ADMIN_GROUPS[update.message.chat_id]
         thread_id = None
-        if target_group == config.ADMIN_GROUP:
+        if target_group == ADMIN_GROUP:
             thread_id = 206
             response += "\n\nBitte beachte, dass diese Gruppe eigentlich nicht zu chatten gedacht ist."
 
@@ -178,7 +178,7 @@ async def start(update: Update, context: CallbackContext):
 async def unwarn_user(update: Update, context: CallbackContext):
     await update.message.delete()
 
-    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+    if update.message.from_user.id in ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in ADMINS:
         logging.info(f"unwarning {update.message.reply_to_message.from_user.id} !!")
         if "users" not in context.bot_data or update.message.reply_to_message.from_user.id not in context.bot_data[
             "users"] or "warn" not in context.bot_data["users"][update.message.reply_to_message.from_user.id]:
@@ -200,7 +200,7 @@ async def unwarn_user(update: Update, context: CallbackContext):
 async def warn_user(update: Update, context: CallbackContext):
     await update.message.delete()
 
-    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+    if update.message.from_user.id in ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in ADMINS:
         logging.info(f"warning {update.message.reply_to_message.from_user.id} !!")
         if "users" not in context.bot_data or update.message.reply_to_message.from_user.id not in context.bot_data[
             "users"] or "warn" not in context.bot_data["users"][update.message.reply_to_message.from_user.id]:
@@ -232,7 +232,7 @@ async def warn_user(update: Update, context: CallbackContext):
 async def report_user(update: Update, _: CallbackContext):
     await update.message.delete()
 
-    if update.message.from_user.id in config.ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in config.ADMINS:
+    if update.message.from_user.id in ADMINS and update.message.reply_to_message is not None and update.message.reply_to_message.from_user.id not in ADMINS:
         logging.info(f"reporting {update.message.reply_to_message.from_user.id} !!")
         r = requests.post(url="http://localhost:8080/reports",
                           json={
@@ -242,7 +242,7 @@ async def report_user(update: Update, _: CallbackContext):
                           })
         logging.info(r)
         await update.message.reply_to_message.reply_text(
-            f"Hey {mention(update)}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
+            f"Hey {mention_html(update.message.reply_to_message.from_user.id,update.message.reply_to_message.from_user.first_name )}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
 
 
 def register_commands(app: Application):
