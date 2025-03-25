@@ -4,12 +4,12 @@ deepl==1.21.1
 selenium==4.30.0
 regex==2024.11.6
 psycopg2-binary
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 numpy==2.2.4
 httpx==0.28.1
 pytube==15.0.0
-yt-dlp==2025.3.21
+yt-dlp==2025.3.25
 #youtube_dl # pip install --upgrade --force-reinstall "git+https://github.com/ytdl-org/youtube-dl.git"
 Pillow==11.1.0
 pandas==2.2.3
-resvg-py==0.1.2
+resvg-py==0.2.0
