@@ -10,22 +10,22 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
 from telegram.warnings import PTBUserWarning
 
 # from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
-from bot.channel.loss_osint import get_osint_losses, setup_osint_crawl
-from bot.channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
-from bot.channel.meme import register_meme
-from bot.channel.ukraine_russia import register_ua_ru
-from bot.settings.config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
-from bot.data.db import get_destination_ids, get_accounts
-from bot.group.bingo import bingo_field, reset_bingo
-from bot.group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
-from bot.group.dictionary import handle_other_chats
-from bot.private.feedback import fwd, respond_feedback
-from bot.private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
+from channel.loss_osint import get_osint_losses, setup_osint_crawl
+from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
+from channel.meme import register_meme
+from channel.ukraine_russia import register_ua_ru
+from settings.config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
+from data.db import get_destination_ids, get_accounts
+from group.bingo import bingo_field, reset_bingo
+from group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
+from group.dictionary import handle_other_chats
+from private.feedback import fwd, respond_feedback
+from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
-from bot.private.pattern import add_pattern_handler
-from bot.source.add import add_source_handler, handle_join
-from bot.source.edit import edit_source_handler
-from bot.source.lookup import lookup
+from private.pattern import add_pattern_handler
+from source.add import add_source_handler, handle_join
+from source.edit import edit_source_handler
+from source.lookup import lookup
 
 
 def add_logging():
