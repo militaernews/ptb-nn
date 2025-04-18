@@ -6,7 +6,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
-from bot import config
+from bot.settings import config
 from bot.util.helper import get_text2
 from bot.util.regex import JOIN_ID
 

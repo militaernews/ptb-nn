@@ -8,8 +8,8 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.config import CHANNEL_UA_RU
-from bot.constant import FOOTER_UA_RU
+from bot.settings.config import CHANNEL_UA_RU
+from bot.settings.constant import FOOTER_UA_RU
 from bot.util.helper import export_svg
 
 # import constant

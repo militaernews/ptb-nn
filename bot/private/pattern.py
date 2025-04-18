@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, filters, ContextTypes
 
-from bot.config import ADMINS
+from bot.settings.config import ADMINS
 from bot.data.db import get_source, set_pattern
 from bot.private.common import cancel_handler, text_filter
 

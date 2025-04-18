@@ -3,7 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from bot import config
+from bot.settings import config
 
 
 async def cancel(update: Update, _: CallbackContext):

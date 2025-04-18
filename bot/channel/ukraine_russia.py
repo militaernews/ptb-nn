@@ -3,8 +3,8 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackContext, filters, Application, MessageHandler
 
-from bot.config import CHANNEL_UA_RU
-from bot.constant import FOOTER_UA_RU
+from bot.settings.config import CHANNEL_UA_RU
+from bot.settings.constant import FOOTER_UA_RU
 
 
 async def append_footer_single(update: Update, context: ContextTypes.DEFAULT_TYPE):

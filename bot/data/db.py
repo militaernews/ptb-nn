@@ -5,7 +5,7 @@ from typing import Optional, Dict, List
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
 
-from bot.config import DATABASE_URL
+from bot.settings.config import DATABASE_URL
 from bot.data.model import Source, SourceInsert, Account
 
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)

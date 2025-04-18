@@ -10,7 +10,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.helpers import mention_html
 
-from bot.constant import FOOTER
+from bot.settings.constant import FOOTER
 from bot.util.helper import export_svg
 
 load_dotenv()

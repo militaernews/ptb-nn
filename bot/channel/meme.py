@@ -3,8 +3,8 @@ import logging
 from telegram import Update, MessageOrigin
 from telegram.ext import CallbackContext, filters, MessageHandler, Application
 
-from bot.config import NX_MEME
-from bot.constant import FOOTER_MEME
+from bot.settings.config import NX_MEME
+from bot.settings.constant import FOOTER_MEME
 
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):

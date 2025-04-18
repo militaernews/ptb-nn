@@ -7,8 +7,8 @@ from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from bot.config import MSG_REMOVAL_PERIOD, LOG_GROUP
-from bot.constant import FOOTER
+from bot.settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from bot.settings.constant import FOOTER
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
