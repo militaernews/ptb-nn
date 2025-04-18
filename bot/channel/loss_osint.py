@@ -8,10 +8,9 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.settings.config import CHANNEL_UA_RU
-from bot.settings.constant import FOOTER_UA_RU
-from bot.util.helper import export_svg
-
+from settings.config import CHANNEL_UA_RU
+from settings.constant import FOOTER_UA_RU
+from util.helper import export_svg
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
@@ -101,7 +100,7 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
         new_loss = ""
     elif new > 0:
         new_loss = f'<tspan style="fill:#ffd42a">+{format_number(new)}</tspan>'
-    else: #correcting a too high value
+    else:  # correcting a too high value
         new_loss = f'<tspan style="fill:#34b7eb">{format_number(new)}</tspan>'
 
     return f""" 

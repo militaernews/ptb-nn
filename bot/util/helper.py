@@ -1,14 +1,14 @@
 import logging
 import os
 
-from resvg_py import  svg_to_bytes
+from resvg_py import svg_to_bytes
 from telegram import Update, User
 from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from bot.settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP
-from bot.settings.constant import FOOTER
+from settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from settings.constant import FOOTER
 
 CHAT_ID = "chat_id"
 MSG_ID = "msg_id"
@@ -87,14 +87,11 @@ def export_svg(svg: str, filename: str):
 
     encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=["/res/fonts"],
 
-                           text_rendering="optimize_legibility"
-                         )
+                                        text_rendering="optimize_legibility"
+                                        )
 
-    with open( f"{filename}.png", 'wb') as f:
-        f.write(encoded  )
-
-
-
+    with open(f"{filename}.png", 'wb') as f:
+        f.write(encoded)
 
 
 def read_file(path: str) -> str:

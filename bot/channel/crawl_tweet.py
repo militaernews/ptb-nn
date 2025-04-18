@@ -11,8 +11,8 @@ from selenium.webdriver.common.by import By
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.settings.config import CHANNEL_UA_RU
-from bot.settings.constant import FOOTER_UA_RU
+from settings.config import CHANNEL_UA_RU
+from settings.constant import FOOTER_UA_RU
 
 PATTERN_TWITTER = re.compile(r"(https*://(?:twitter|x)\.com/\S+/status/\d+)")
 

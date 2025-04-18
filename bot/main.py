@@ -14,7 +14,6 @@ from channel.loss_osint import get_osint_losses, setup_osint_crawl
 from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
 from channel.meme import register_meme
 from channel.ukraine_russia import register_ua_ru
-from settings.config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
 from data.db import get_destination_ids, get_accounts
 from group.bingo import bingo_field, reset_bingo
 from group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
@@ -23,6 +22,7 @@ from private.feedback import fwd, respond_feedback
 from private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
     accept_request_ug
 from private.pattern import add_pattern_handler
+from settings.config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
 from source.add import add_source_handler, handle_join
 from source.edit import edit_source_handler
 from source.lookup import lookup

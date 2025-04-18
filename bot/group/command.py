@@ -8,9 +8,8 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, Application, CommandHandler, filters
 from telegram.helpers import mention_html
 
-
-from bot.settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
-from bot.util.helper import reply_photo, reply_html
+from settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
+from util.helper import reply_photo, reply_html
 
 
 async def setup(update: Update, context: CallbackContext):
@@ -242,7 +241,7 @@ async def report_user(update: Update, _: CallbackContext):
                           })
         logging.info(r)
         await update.message.reply_to_message.reply_text(
-            f"Hey {mention_html(update.message.reply_to_message.from_user.id,update.message.reply_to_message.from_user.first_name )}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
+            f"Hey {mention_html(update.message.reply_to_message.from_user.id, update.message.reply_to_message.from_user.first_name)}!\n\nEin Admin dieser Gruppe hat deinen Account unserem Antispam-System gemeldet. Moderatoren überprüfen diesen Fall nun.\n\nFalls dein Account Betrug oder Spam begangen hat, dann wirst du in allen Gruppen gebannt, wenn unser Antispam-System dort aktiv ist.")
 
 
 def register_commands(app: Application):

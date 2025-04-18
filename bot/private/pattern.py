@@ -2,9 +2,9 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, filters, ContextTypes
 
-from bot.settings.config import ADMINS
-from bot.data.db import get_source, set_pattern
-from bot.private.common import cancel_handler, text_filter
+from data.db import get_source, set_pattern
+from private.common import cancel_handler, text_filter
+from settings.config import ADMINS
 
 PATTERN = "new_pattern"
 PATTERN_SOURCE_ID = 'pattern_source_id'

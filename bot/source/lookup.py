@@ -2,8 +2,8 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext
 
-from bot.settings.config import GROUP_SOURCE
-from bot.data.db import get_source
+from data.db import get_source
+from settings.config import GROUP_SOURCE
 
 
 async def lookup(update: Update, context: CallbackContext):
@@ -26,3 +26,4 @@ async def lookup(update: Update, context: CallbackContext):
 
     await update.message.reply_text(
         f"Quelle mit der ID <code>{sender_chat.id}</code> gefunden!\n\n{result.username} {result.bias} {result.display_name}")
+

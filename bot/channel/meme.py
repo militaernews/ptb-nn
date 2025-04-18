@@ -3,8 +3,8 @@ import logging
 from telegram import Update, MessageOrigin
 from telegram.ext import CallbackContext, filters, MessageHandler, Application
 
-from bot.settings.config import NX_MEME
-from bot.settings.constant import FOOTER_MEME
+from settings.config import NX_MEME
+from settings.constant import FOOTER_MEME
 
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
@@ -54,7 +54,7 @@ async def format_meme_footer(original_text: str) -> str:
 
 async def repost_forward(update: Update, context: CallbackContext):
     print(update.channel_post)
-    if update.channel_post.forward_origin.type is not MessageOrigin.CHANNEL :
+    if update.channel_post.forward_origin.type is not MessageOrigin.CHANNEL:
         await update.channel_post.copy(NX_MEME,
                                        caption=await format_meme_footer(update.channel_post.caption))
         await update.channel_post.delete()
