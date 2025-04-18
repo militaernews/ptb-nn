@@ -156,16 +156,16 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
     <style>
      @font-face {{
         font-family: 'Impact';
-        src: url('./res/fonts/IMPACT.ttf') format('truetype');
+        src: url('./res/fonts/impact.ttf') format('truetype');
       }}
       @font-face {{
         font-family: 'Arial';
-        src: url('./res/fonts/ARIAL.ttf') format('truetype');
+        src: url('./res/fonts/arial.ttf') format('truetype');
       }}
       
    
       text {{ 
-      font-family: Impact, sans-serif;
+      font-family: 'Impact', sans-serif;
        fill:#ffffff;
        }}
     
