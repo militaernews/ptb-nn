@@ -105,8 +105,8 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
 
     return f""" 
 
-    <text style="font-size:40px;font-family:Impact;fill:#ffffff;" x="{x}" y="{y}">
-{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
+    <text style="font-size:40px;" x="{x}" y="{y}">
+{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:'Arial',sans-serif;" >{description}</tspan></text>  """
 
 
 def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Dict[str, int]], day: str):
@@ -152,6 +152,26 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
   <feGaussianBlur stdDeviation="70"/>
 </filter>
 
+
+    <style>
+     @font-face {{
+        font-family: 'Impact';
+        src: url('./res/fonts/IMPACT.ttf') format('truetype');
+      }}
+      @font-face {{
+        font-family: 'Arial';
+        src: url('./res/fonts/ARIAL.ttf') format('truetype');
+      }}
+      
+   
+      text {{ 
+      font-family: Impact, sans-serif;
+       fill:#ffffff;
+       }}
+    
+      </style>
+
+
 </defs>
  
 <rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
@@ -161,9 +181,8 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 
 <image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ua_coat.svg" />
 
-            <text  style="font-size:48px;font-family:Impact;text-anchor:middle;fill:#ffffff;"
-      x="0" y="{(48 + 24) + margin}px">{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan
-dy="1em"  x="0"  style="font-size:24px;font-family:Arial;fill:#ffffff;">Wöchentliche geolokalisierte Materialverluste</tspan></text>
+<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'Arial',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
+</text>
     """
 
     logging.info("------")
