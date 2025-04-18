@@ -14,7 +14,7 @@ services:
       - postgres
 
   postgres:
-        image: postgres:16
+        image: postgres:17
         container_name: postgres-nn
         restart: unless-stopped
         environment:
@@ -26,5 +26,3 @@ services:
         ports:
           - "5432:5432"
 
-volumes:
-    postgres-data:

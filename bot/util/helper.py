@@ -1,7 +1,7 @@
 import logging
 import os
 
-from resvg_py import svg_to_base64
+from resvg_py import  svg_to_bytes
 from telegram import Update, User
 from telegram.constants import ChatType
 from telegram.error import TelegramError
@@ -85,13 +85,13 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
 def export_svg(svg: str, filename: str):
     logging.info(svg)
 
-    encoded: list[bytes] = svg_to_base64(svg, dpi=300, font_dirs=["/res/fonts"],
+    encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=["/res/fonts"],
 
                            text_rendering="optimize_legibility"
                          )
 
     with open( f"{filename}.png", 'wb') as f:
-        f.write(bytes(encoded))
+        f.write(encoded  )
 
 
 

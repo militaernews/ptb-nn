@@ -103,8 +103,8 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
         new_loss = ""
     elif new > 0:
         new_loss = f'<tspan style="fill:#ffd42a">+{format_number(new)}</tspan>'
-    else:
-        new_loss = f'<tspan style="fill:#AFE1AF">{format_number(new)}</tspan>'
+    else: #correcting a too high value
+        new_loss = f'<tspan style="fill:#34b7eb">{format_number(new)}</tspan>'
 
     return f""" 
 
