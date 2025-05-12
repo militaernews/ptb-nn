@@ -12,6 +12,8 @@ from settings.config import CHANNEL_UA_RU
 from settings.constant import FOOTER_UA_RU
 from util.helper import export_svg
 
+from settings.config import RES_PATH
+
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
 CATEGORIES = {
@@ -153,22 +155,23 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 </filter>
 
 
-    <style>
+    <style type="text/css">
      @font-face {{
-        font-family: 'Impact';
-        src: url('./res/fonts/impact.ttf') format('truetype');
+        font-family: 'testt';
+        src: url('{RES_PATH}/fonts/impact.ttf') format('truetype');
       }}
       @font-face {{
-        font-family: 'Arial';
-        src: url('./res/fonts/arial.ttf') format('truetype');
+        font-family: 'test2';
+        src: url('{RES_PATH}/fonts/arial.ttf') format('truetype');
       }}
       
    
       text {{ 
-      font-family: 'Impact', sans-serif;
+      font-family: test, sans-serif;
        fill:#ffffff;
        }}
     
+  
       </style>
 
 
@@ -177,11 +180,11 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 <rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
 <rect  fill="url(#gradient)"  height="100%" width="100%" x="{min_x}" y="0" filter="url(#shadow)"  rx="8"  />
 
-<image x="{-all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ru_coat.svg"/>
+<image x="{-all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="{RES_PATH}/img/ru_coat.svg"/>
 
-<image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="./res/img/ua_coat.svg" />
+<image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="{RES_PATH}/img/ua_coat.svg" />
 
-<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'Arial',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
+<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;font-family: 'test2', sans-serif;" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'Arial',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
 </text>
     """
 
