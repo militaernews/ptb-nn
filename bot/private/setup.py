@@ -1,7 +1,7 @@
 import contextlib
 
 
-from settings.config import UG_ADMINS,GROUP_UA_RU
+from settings.config import UG_ADMINS,ADMINS,GROUP_UA_RU
 from telegram import Update, BotCommandScopeChatAdministrators, BotCommandScopeChat
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext
 async def set_cmd(update: Update, context: CallbackContext):
     await context.bot.delete_my_commands()
 
-    chat_de_commands = [
+    general_commands = [
         ("cmd", "Übersicht aller Befehle"),
         ("maps", "Karten Ukraine-Krieg"),
         ("loss", "Materialverluste in der Ukraine"),
@@ -35,9 +35,9 @@ async def set_cmd(update: Update, context: CallbackContext):
         ("vs", "Verfassungsschutz"),
         ("front", "An die Front!"),
     ]
-    await context.bot.set_my_commands(chat_de_commands)
+    await context.bot.set_my_commands(general_commands)
 
-    await context.bot.set_my_commands(chat_de_commands + [
+    await context.bot.set_my_commands(general_commands + [
         ("warn", "Nutzer verwarnen"),
         ("unwarn", "Warnung abziehen"),
         ("ban", "Nutzer sperren"),
@@ -46,10 +46,25 @@ async def set_cmd(update: Update, context: CallbackContext):
         ("reset_bingo", "Neue Bingo-Runde")
     ], scope=BotCommandScopeChatAdministrators(GROUP_UA_RU))
 
-    ug_admin_commands = chat_de_commands + [
+    ug_admin_commands = general_commands + [
         ("add_advertisement", "Werbung erstellen"),
     ]
     for chat_id in UG_ADMINS:
         with contextlib.suppress(BadRequest):
             await context.bot.set_my_commands(ug_admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
+
+
+    admin_commands = general_commands + [
+        ("add_source", "Quelle hinzufügen"),
+        ("edit_source", "Quelle bearbeiten"),
+        ("add_pattern", "Zu entfernenden Footer hinzufügen"),
+        ("warn", "Nutzer verwarnen"),
+        ("unwarn", "Verwarnung zurückziehen"),
+    ]
+    for chat_id in ADMINS:
+        try:
+            await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
+        except BadRequest:  # to ignore chat not found
+            pass
+
     await update.message.reply_text("Commands updated!")

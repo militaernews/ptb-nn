@@ -9,6 +9,8 @@ from telegram.ext import MessageHandler, Defaults, ApplicationBuilder, filters, 
     InlineQueryHandler, CallbackQueryHandler
 from telegram.warnings import PTBUserWarning
 
+from private import setup
+from private.advertisement import register_advertisement
 # from channel.crawl_tweet import PATTERN_TWITTER, handle_twitter
 from channel.loss_osint import get_osint_losses, setup_osint_crawl
 from channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
@@ -66,6 +68,8 @@ def main():
 
     #  .persistence(PicklePersistence(filepath="persistence")) \
 
+    app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
+
     app.add_handler(
         ChatJoinRequestHandler(callback=join_request_buttons, chat_id=get_destination_ids(), block=False))
     app.add_handler(ChatJoinRequestHandler(callback=join_request_ug, chat_id=UG_LZ, block=False))
@@ -75,6 +79,7 @@ def main():
 
     register_meme(app)
     register_ua_ru(app)
+    register_advertisement(app)
     register_commands(app)
 
     app.add_handler(InlineQueryHandler(inline_query))

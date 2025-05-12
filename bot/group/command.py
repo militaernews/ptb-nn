@@ -12,34 +12,6 @@ from settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
 from util.helper import reply_photo, reply_html
 
 
-async def setup(update: Update, context: CallbackContext):
-    general_commands = [
-        ("maps", "Karten"),
-        ("loss", "Verluste"),
-        ("stats", "Statistiken"),
-        ("short", "Abkürzungen"),
-        ("support", "Unterstützung der Ukrainer"),
-        ("channels", "Ukrainekrieg auf Telegram"),
-        ("peace", "Russlands Kriege"),
-        ("donbass", "Beschuss des Donbass seit 2014"),
-        ("genozid", "Kein Genozid im Donbass")
-    ]
-    await context.bot.set_my_commands(general_commands)
-
-    admin_commands = general_commands + [
-        ("add_source", "Quelle hinzufügen"),
-        ("edit_source", "Quelle bearbeiten"),
-        ("add_pattern", "Zu entfernenden Footer hinzufügen"),
-        ("warn", "Nutzer verwarnen"),
-        ("unwarn", "Verwarnung zurückziehen"),
-    ]
-    for chat_id in ADMINS:
-        try:
-            await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
-        except BadRequest:  # to ignore chat not found
-            pass
-
-    await update.message.reply_text("Commands updated.")
 
 
 async def maps(update: Update, context: CallbackContext):
@@ -260,5 +232,5 @@ def register_commands(app: Application):
     app.add_handler(CommandHandler("mimimi", mimimi))
     app.add_handler(CommandHandler("cia", cia))
 
-    app.add_handler(CommandHandler("setup", setup, filters.Chat(ADMINS)))
+
     app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))
