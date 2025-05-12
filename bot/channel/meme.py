@@ -52,7 +52,7 @@ async def format_meme_footer(original_text: str) -> str:
     return f"{original_text}{FOOTER_MEME}"
 
 
-async def repost_forward(update: Update, context: CallbackContext):
+async def repost_forward(update: Update, _: CallbackContext):
     print(update.channel_post)
     if update.channel_post.forward_origin.type is not MessageOrigin.CHANNEL:
         await update.channel_post.copy(NX_MEME,
@@ -60,7 +60,7 @@ async def repost_forward(update: Update, context: CallbackContext):
         await update.channel_post.delete()
 
 
-async def append_buttons_news(update: Update, context: CallbackContext):
+async def append_buttons_news(update: Update, _: CallbackContext):
     text = update.message.text_html_urled or update.message.caption_html_urled
     if text is not None:
         logging.info("Appending buttons")

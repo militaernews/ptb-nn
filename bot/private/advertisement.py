@@ -7,6 +7,7 @@ from telegram.ext import CommandHandler, ConversationHandler, filters, MessageHa
 
 from settings.config import UG_CHANNEL,UG_ADMINS
 
+from private.common import cancel_handler
 
 ADVERTISEMENT_MEDIA: Final[str] = "new_ADVERTISEMENT_MEDIA"
 ADVERTISEMENT_TEXT: Final[str] = "new_ADVERTISEMENT_TEXT"
@@ -121,17 +122,15 @@ async def save_advertisement(update: Update, context: CallbackContext) -> int:
             InlineKeyboardButton(context.chat_data[ADVERTISEMENT_BUTTON], url=context.chat_data[ADVERTISEMENT_URL]))
 
     if isinstance(media, Animation):
-        msg = await context.bot.send_animation(UG_CHANNEL, media, caption=text, reply_markup=button)
+        await context.bot.send_animation(UG_CHANNEL, media, caption=text, reply_markup=button)
     elif isinstance(media, Sequence):
-        msg = await context.bot.send_photo(UG_CHANNEL, media[-1], caption=text, reply_markup=button)
+        await context.bot.send_photo(UG_CHANNEL, media[-1], caption=text, reply_markup=button)
     elif isinstance(media, Video):
-        msg = await context.bot.send_video(UG_CHANNEL, media, caption=text, reply_markup=button)
+        await context.bot.send_video(UG_CHANNEL, media, caption=text, reply_markup=button)
     else:
-        msg = await context.bot.send_text(UG_CHANNEL, text, reply_markup=button)
+        await context.bot.send_text(UG_CHANNEL, text, reply_markup=button)
 
-    await msg.pin()
-
-    await update.message.reply_text("Post sollte nun im deutschen Kanal gesendet worden sein.")
+    await update.message.reply_text("Post sollte nun in <b>@ukr_ger</b> gesendet worden sein.")
 
     return ConversationHandler.END
 
@@ -152,5 +151,5 @@ def register_advertisement(app: Application):
             SAVE_ADVERTISEMENT: [CommandHandler("save", save_advertisement)]
 
         },
-        fallbacks=[CommandHandler("cancel", cancel)],
+        fallbacks=cancel_handler,
     ))

@@ -1,7 +1,6 @@
 import contextlib
 
-
-from settings.config import UG_ADMINS,ADMINS,GROUP_UA_RU
+from settings.config import UG_ADMINS, ADMINS, GROUP_UA_RU
 from telegram import Update, BotCommandScopeChatAdministrators, BotCommandScopeChat
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
@@ -53,7 +52,6 @@ async def set_cmd(update: Update, context: CallbackContext):
         with contextlib.suppress(BadRequest):
             await context.bot.set_my_commands(ug_admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
 
-
     admin_commands = general_commands + [
         ("add_source", "Quelle hinzufügen"),
         ("edit_source", "Quelle bearbeiten"),
@@ -62,9 +60,7 @@ async def set_cmd(update: Update, context: CallbackContext):
         ("unwarn", "Verwarnung zurückziehen"),
     ]
     for chat_id in ADMINS:
-        try:
+        with contextlib.suppress(BadRequest):
             await context.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=chat_id))
-        except BadRequest:  # to ignore chat not found
-            pass
 
     await update.message.reply_text("Commands updated!")
