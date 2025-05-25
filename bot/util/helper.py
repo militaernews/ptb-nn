@@ -7,7 +7,7 @@ from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP,RES_PATH
 from settings.constant import FOOTER
 
 CHAT_ID = "chat_id"
@@ -85,7 +85,7 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
 def export_svg(svg: str, filename: str):
     logging.info(svg)
 
-    encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=["/res/fonts"],
+    encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=[f"../res/fonts"],
 
                                         text_rendering="optimize_legibility"
                                         )
