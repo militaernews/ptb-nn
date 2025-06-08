@@ -107,7 +107,7 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
 
     return f""" 
 
-    <text style="font-size:40px;" x="{x}" y="{y}">
+    <text style="font-size:40px;font-family:sans-serif;" x="{x}" y="{y}">
 {format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:'freesans-2',sans-serif;" >{description}</tspan></text>  """
 
 
