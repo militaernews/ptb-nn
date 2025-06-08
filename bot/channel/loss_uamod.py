@@ -84,14 +84,15 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
     background_color = "#000000"
 
     svg = f"""<?xml version='1.0' encoding='UTF-8' standalone='no'?>
-    <svg
+<svg
        width='{all_width}'
        height='{all_height}'
        viewBox='0 0 {all_width} {all_height}'
        version='1.1'      
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
-       <defs>
+       
+<defs>
    <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
 
 
@@ -99,15 +100,22 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
           <stop offset="100%" style="stop-color:rgb(184, 73, 39);stop-opacity:1.00" />
 
     </linearGradient>
-  </defs>
-    <rect width="100%" height="100%"   fill='{background_color}'/>
+</defs>
+  
+<style>
+    text {{
+      font-family:Arial,sans-serif;
+       fill:#ffffff;
+     }}
+</style>
+  
+<rect width="100%" height="100%"   fill='{background_color}'/>
         <text
             x="50%"
             y="{heading_size + margin}"
             text-anchor="middle"
-            font-size="{heading_size}"
             fill="{heading_color}"
-            font-family="Bahnschrift">Verluste Russlands laut Verteidigungsministerium Ukraine - {day}</text>
+            style="font-size:{heading_size}px;font-family:Impact;">Verluste Russlands laut Verteidigungsministerium Ukraine - {day}</text>
     """
 
     logging.info("------")
@@ -132,8 +140,7 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             y="{(y * height_cell) + (y + 2.2) * margin + heading_space}"
             text-anchor="start"
             dominant-baseline="central"
-            font-size="58px"
-            font-family="Bahnschrift"
+            style="font-size:58px;font-family:Impact;"
             fill="{loss_color}">{format_number(v)}<tspan """
 
             if k != "presidents" and new_losses[k] != 0:
@@ -142,14 +149,14 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             svg += f"""dy="1.5em"
             text-anchor="start"
             fill="{description_color}"
-            x="{x * width_cell + (x + 2) * margin}"
-            font-size="42px">{LOSS_DESCRIPTIONS[k]}</tspan>
+            x="{x * width_cell + (x + 2) * margin}"          
+   style="font-size:42px;font-family:Arial;">{LOSS_DESCRIPTIONS[k]}</tspan>
         </text>"""
 
             if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
                 percentage = f"{v * 100 / LOSS_STOCKPILE[k]:.2f}".replace(".", ",")
                 svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
-                 text-anchor="end" font-size="36px" font-family="Bahnschrift" fill="#D3D3D3" dominant-baseline="text-top">{percentage}%</text>"""
+                 text-anchor="end" style="font-size:36px;font-family:Impact;" fill="#D3D3D3" dominant-baseline="text-top">{percentage}%</text>"""
 
     svg += """
 

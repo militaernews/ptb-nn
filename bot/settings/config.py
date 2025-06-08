@@ -37,4 +37,4 @@ ADMIN_GROUPS = {
 }
 
 CONTAINER: Final[bool] = bool(os.getenv('CONTAINER', False), )
-RES_PATH: Final[str] = "./res"
+RES_PATH: Final[str] =   "./res"

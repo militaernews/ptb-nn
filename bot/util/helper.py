@@ -86,6 +86,11 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
 def export_svg(svg: str, filename: str):
     logging.info(svg)
 
+    logging.error("::: DIR 2")
+    logging.error(os.path.dirname(os.path.realpath(__file__)))
+    logging.error("::: CWD 2")
+    logging.error(os.getcwd())
+
     encoded: list[bytes] = svg_to_bytes(svg, dpi=300, font_dirs=[f"../res/fonts"],
 
                                         text_rendering="optimize_legibility"

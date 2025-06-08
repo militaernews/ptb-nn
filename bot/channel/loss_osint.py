@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import re
 from itertools import islice
 from typing import Dict
@@ -13,6 +14,11 @@ from bot. settings.constant import FOOTER_UA_RU
 from bot. util.helper import export_svg
 
 from bot. settings.config import RES_PATH
+
+logging.error("::: DIR 1" )
+logging.error( os.path.dirname(os.path.realpath(__file__)))
+logging.error("::: CWD 1")
+logging.error(os.getcwd())
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
@@ -101,14 +107,14 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
     if new == 0:
         new_loss = ""
     elif new > 0:
-        new_loss = f'<tspan style="fill:#ffd42a">+{format_number(new)}</tspan>'
+        new_loss = f'<tspan style="fill:#ffd42a;">+{format_number(new)}</tspan>'
     else:  # correcting a too high value
         new_loss = f'<tspan style="fill:#34b7eb">{format_number(new)}</tspan>'
 
     return f""" 
 
-    <text style="font-size:40px;font-family:sans-serif;" x="{x}" y="{y}">
-{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:'freesans-2',sans-serif;" >{description}</tspan></text>  """
+    <text style="font-size:40px;font-family:Impact;" x="{x}" y="{y}">
+{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:Arial;" >{description}</tspan></text>  """
 
 
 def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Dict[str, int]], day: str):
@@ -154,28 +160,14 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
   <feGaussianBlur stdDeviation="70"/>
 </filter>
 
-
-    <style >
-
-
-    
-
-
-      text {{
-      font-family: Ubuntu,  sans-serif;
-       fill:#ffffff;
-
-       }}
-
-        tspan  {{
-           fill:#fffaaa;
-        }}
-    
-  
-      </style>
-
-
 </defs>
+
+<style>
+    text {{
+      font-family:Arial,sans-serif;
+       fill:#ffffff;
+     }}
+</style>
  
 <rect fill="#000" height="100%" width="100%" x="{min_x}" y="0"  />
 <rect  fill="url(#gradient)"  height="100%" width="100%" x="{min_x}" y="0" filter="url(#shadow)"  rx="8"  />
@@ -184,7 +176,7 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 
 <image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="{RES_PATH}/img/ua_coat.svg" />
 
-<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;font-family: 'Ubuntu';" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'freesans-2',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
+<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;font-family:Impact;" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'freesans-2',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
 </text>
     """
 
