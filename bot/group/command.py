@@ -8,8 +8,8 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext, Application, CommandHandler, filters
 from telegram.helpers import mention_html
 
-from settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
-from util.helper import reply_photo, reply_html
+from bot. settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
+from bot. util.helper import reply_photo, reply_html
 
 
 

@@ -8,9 +8,9 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from settings.config import CHANNEL_UA_RU
-from settings.constant import FOOTER_UA_RU
-from util.helper import export_svg
+from bot. settings.config import CHANNEL_UA_RU
+from bot. settings.constant import FOOTER_UA_RU
+from bot. util.helper import export_svg
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",

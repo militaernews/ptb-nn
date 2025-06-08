@@ -8,11 +8,11 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from settings.config import CHANNEL_UA_RU
-from settings.constant import FOOTER_UA_RU
-from util.helper import export_svg
+from bot. settings.config import CHANNEL_UA_RU
+from bot. settings.constant import FOOTER_UA_RU
+from bot. util.helper import export_svg
 
-from settings.config import RES_PATH
+from bot. settings.config import RES_PATH
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
@@ -108,7 +108,7 @@ def create_entry(x: int, y: int, total: int, new: int, description: str) -> str:
     return f""" 
 
     <text style="font-size:40px;" x="{x}" y="{y}">
-{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:'Arial',sans-serif;" >{description}</tspan></text>  """
+{format_number(total)}{new_loss}<tspan dy="22px" x="{x}" style="font-size:20px;font-family:'freesans-2',sans-serif;" >{description}</tspan></text>  """
 
 
 def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Dict[str, int]], day: str):
@@ -155,21 +155,21 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 </filter>
 
 
-    <style type="text/css">
-     @font-face {{
-        font-family: 'testt';
-        src: url('{RES_PATH}/fonts/impact.ttf') format('truetype');
-      }}
-      @font-face {{
-        font-family: 'test2';
-        src: url('{RES_PATH}/fonts/arial.ttf') format('truetype');
-      }}
-      
-   
-      text {{ 
-      font-family: test, sans-serif;
+    <style >
+
+
+    
+
+
+      text {{
+      font-family: Ubuntu,  sans-serif;
        fill:#ffffff;
+
        }}
+
+        tspan  {{
+           fill:#fffaaa;
+        }}
     
   
       </style>
@@ -184,7 +184,7 @@ def create_svg(total_losses: Dict[str, Dict[str, int]], new_losses: Dict[str, Di
 
 <image x="{all_width / 4 - coat_size / 2}" y="{all_height / 2 - coat_size / 2}" width="{coat_size}" height="{coat_size}"  opacity="0.12" href="{RES_PATH}/img/ua_coat.svg" />
 
-<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;font-family: 'test2', sans-serif;" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'Arial',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
+<text x="0" y="{(48 + 24) + margin}px" style="font-size:48px;text-anchor:middle;font-family: 'Ubuntu';" >{day} <tspan style="fill:#ffd42a;">// Tag {(datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days}</tspan><tspan dy="1em"  x="0"  style="font-size:24px;font-family:'freesans-2',sans-serif;" >Wöchentliche geolokalisierte Materialverluste</tspan>
 </text>
     """
 

@@ -5,11 +5,9 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, PhotoSi
 from telegram.ext import CommandHandler, ConversationHandler, filters, MessageHandler, CallbackContext, ContextTypes, \
     Application
 
-from settings.config import UG_CHANNEL,UG_ADMINS
-
-from private.common import cancel_handler
-
-from util.helper import get_text
+from bot. settings.config import UG_CHANNEL,UG_ADMINS
+from bot. private.common import cancel_handler
+from bot. util.helper import get_text
 
 ADVERTISEMENT_MEDIA: Final[str] = "new_ADVERTISEMENT_MEDIA"
 ADVERTISEMENT_TEXT: Final[str] = "new_ADVERTISEMENT_TEXT"
@@ -30,7 +28,7 @@ async def add_advertisement(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     context.chat_data[ADVERTISEMENT_BUTTON] = None
     context.chat_data[ADVERTISEMENT_URL] = None
 
-    await update.message.reply_text(get_text(update,"advertisement/intro")
+    await update.message.reply_text(get_text(update,"advertisement/intro"))
     print(update, context.chat_data)
     return NEEDS_MEDIA
 
@@ -74,7 +72,7 @@ async def send_preview(update: Update, context: CallbackContext, button: InlineK
         else:
             await update.message.reply_text(text, reply_markup=button)
 
-        await update.message.reply_text(get_text(update,"advertisement/ready.html"))
+        await update.message.reply_text(get_text(update,"advertisement/ready"))
     except Exception as e:
         await update.message.reply_text("Error on sending you the preview! Restart with /cancel."
                                         f"\n\n<code>{e}</code>")

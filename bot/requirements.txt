@@ -1,15 +1,15 @@
-python-telegram-bot[job-queue]==22.0
+python-telegram-bot[job-queue]==22.1
 deep-translator==1.11.4
 deepl==1.22.0
-selenium==4.32.0
+selenium==4.33.0
 regex==2024.11.6
 psycopg2-binary
 python-dotenv==1.1.0
-numpy==2.2.5
+numpy==2.3.0
 httpx==0.28.1
 pytube==15.0.0
-yt-dlp==2025.4.30
+yt-dlp==2025.5.22
 #youtube_dl # pip install --upgrade --force-reinstall "git+https://github.com/ytdl-org/youtube-dl.git"
 Pillow==11.2.1
-pandas==2.2.3
+pandas==2.3.0
 resvg-py==0.2.0

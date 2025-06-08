@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Final
 
 from resvg_py import svg_to_bytes
 from telegram import Update, User
@@ -7,11 +8,11 @@ from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP,RES_PATH
-from settings.constant import FOOTER
+from bot.settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP
+from bot.settings.constant import FOOTER
 
-CHAT_ID = "chat_id"
-MSG_ID = "msg_id"
+CHAT_ID: Final[str] = "chat_id"
+MSG_ID: Final[str] = "msg_id"
 
 
 async def delete(context: ContextTypes.DEFAULT_TYPE):

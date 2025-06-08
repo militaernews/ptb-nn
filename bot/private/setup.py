@@ -1,6 +1,6 @@
 import contextlib
 
-from settings.config import UG_ADMINS, ADMINS, GROUP_UA_RU
+from bot.settings.config import UG_ADMINS, ADMINS, GROUP_UA_RU
 from telegram import Update, BotCommandScopeChatAdministrators, BotCommandScopeChat
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
