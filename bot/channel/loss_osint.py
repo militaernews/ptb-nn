@@ -15,11 +15,6 @@ from bot. util.helper import export_svg
 
 from bot. settings.config import RES_PATH
 
-logging.error("::: DIR 1" )
-logging.error( os.path.dirname(os.path.realpath(__file__)))
-logging.error("::: CWD 1")
-logging.error(os.getcwd())
-
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
 CATEGORIES = {
