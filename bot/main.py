@@ -67,7 +67,6 @@ def main():
         .build()
 
     #  .persistence(PicklePersistence(filepath="persistence")) \
-
     app.add_handler(CommandHandler("setup", set_cmd, filters.Chat(ADMINS)))
 
     app.add_handler(

@@ -25,7 +25,7 @@ LOSS_DESCRIPTIONS = {
     'boats': "Marine",
     'se': "Spezialausrüstung",
     'missiles': "Marschflugkörper",
-    'personnel': "Getötetes Personal",
+    'personnel': "Personal (Tot/Verwundet)",
     "presidents": "Präsidenten"
 }
 
