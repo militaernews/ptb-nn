@@ -1,6 +1,5 @@
 import datetime
 import logging
-import os
 import re
 from itertools import islice
 from typing import Dict
@@ -9,11 +8,10 @@ from pandas import read_csv
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot. settings.config import CHANNEL_UA_RU
-from bot. settings.constant import FOOTER_UA_RU
-from bot. util.helper import export_svg
-
-from bot. settings.config import RES_PATH
+from bot.settings.config import CHANNEL_UA_RU
+from bot.settings.config import RES_PATH
+from bot.settings.constant import FOOTER_UA_RU
+from bot.util.helper import export_svg
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
 
@@ -46,6 +44,7 @@ COLUMNS = {
     'Multiple_Rocket_Launchers': "MLRS",
     'Naval_Ships': "Marine",
     'Naval_Ships_and_Submarines': "Marine",
+    'Rocket_and_Missile_Artillery': "MLRS",
     'Self-Propelled_Anti-Aircraft_Guns': "FLAK",
     'Self-Propelled_Artillery': "Artillery",
     'Surface-To-Air_Missile_Systems': "SAM",
