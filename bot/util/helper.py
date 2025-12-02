@@ -89,7 +89,7 @@ def export_svg(svg: str, filename: str):
     encoded: list[bytes] = svg_to_bytes(svg,
                                         dpi=300,
                                         font_dirs=[f"{RES_PATH}/fonts"],
-                                        text_rendering="optimize_legibility"  )
+                                        text_rendering="optimize_legibility")
 
     with open(f"{filename}.png", 'wb') as f:
         f.write(encoded)

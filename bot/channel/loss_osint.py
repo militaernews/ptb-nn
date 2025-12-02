@@ -10,7 +10,6 @@ from telegram.ext import ContextTypes
 
 from bot.settings.config import CHANNEL_UA_RU
 from bot.settings.config import RES_PATH
-from bot.settings.constant import FOOTER_UA_RU
 from bot.util.helper import export_svg
 
 DATA_SOURCE = r'https://docs.google.com/spreadsheets/d/1bngHbR0YPS7XH1oSA1VxoL4R34z60SJcR3NxguZM9GI/gviz/tq?tqx=out:csv&sheet=Totals'
@@ -209,7 +208,7 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 
     text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
             f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{FOOTER_UA_RU}"
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
 
     return text
 

@@ -2,16 +2,13 @@ import logging
 from uuid import uuid4
 
 import requests
-from telegram import Update, BotCommandScopeChat, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton, \
+from telegram import Update, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton, \
     InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
-from telegram.error import BadRequest
 from telegram.ext import CallbackContext, Application, CommandHandler, filters
 from telegram.helpers import mention_html
 
-from bot. settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
-from bot. util.helper import reply_photo, reply_html
-
-
+from bot.settings.config import ADMINS, ADMIN_GROUP, ADMIN_GROUPS
+from bot.util.helper import reply_photo, reply_html
 
 
 async def maps(update: Update, context: CallbackContext):
@@ -231,6 +228,5 @@ def register_commands(app: Application):
     app.add_handler(CommandHandler("bot", bot))
     app.add_handler(CommandHandler("mimimi", mimimi))
     app.add_handler(CommandHandler("cia", cia))
-
 
     app.add_handler(CommandHandler("start", start, filters.ChatType.PRIVATE))

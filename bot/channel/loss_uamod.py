@@ -8,9 +8,8 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot. settings.config import CHANNEL_UA_RU
-from bot. settings.constant import FOOTER_UA_RU
-from bot. util.helper import export_svg
+from bot.settings.config import CHANNEL_UA_RU
+from bot.util.helper import export_svg
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
@@ -269,7 +268,7 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
 
         text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
                 f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>{FOOTER_UA_RU}"
+                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
 
         logging.info(text)
 

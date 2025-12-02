@@ -11,8 +11,7 @@ from selenium.webdriver.common.by import By
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot. settings.config import CHANNEL_UA_RU
-from bot. settings.constant import FOOTER_UA_RU
+from bot.settings.config import CHANNEL_UA_RU
 
 PATTERN_TWITTER = re.compile(r"(https*://(?:twitter|x)\.com/\S+/status/\d+)")
 
@@ -67,6 +66,6 @@ async def handle_twitter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with open(screenshot_path, "rb") as photo:
         await context.bot.send_photo(chat_id=CHANNEL_UA_RU,
                                      photo=photo,
-                                     caption=update.channel_post.text + FOOTER_UA_RU)
+                                     caption=update.channel_post.text)
 
     Path(screenshot_path).unlink(missing_ok=True)

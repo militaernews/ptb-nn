@@ -3,8 +3,7 @@ import logging
 from telegram import Update, MessageOrigin
 from telegram.ext import CallbackContext, filters, MessageHandler, Application
 
-from bot. settings.config import NX_MEME
-from bot. settings.constant import FOOTER_MEME
+from bot.settings.config import NX_MEME
 
 
 async def post_media_meme_nx(update: Update, context: CallbackContext):
@@ -29,7 +28,7 @@ async def add_footer_meme(update: Update, context: CallbackContext):
     original_caption = update.channel_post.caption_html_urled or ""
 
     try:
-        await update.channel_post.edit_caption(await format_meme_footer(original_caption))
+        await update.channel_post.edit_caption(original_caption)
     except Exception as e:
         logging.error(f"Error when posting media: {e}")
 
@@ -42,14 +41,10 @@ async def remove_media_group_id(context: CallbackContext):
 async def post_text_meme_nx(update: Update, _: CallbackContext):
     try:
         await update.channel_post.edit_text(
-            await format_meme_footer(update.channel_post.text_html_urled), disable_web_page_preview=False
+            update.channel_post.text_html_urled, disable_web_page_preview=False
         )
     except Exception as e:
         logging.error(f"Error when posting text: {e}")
-
-
-async def format_meme_footer(original_text: str) -> str:
-    return f"{original_text}{FOOTER_MEME}"
 
 
 async def repost_forward(update: Update, _: CallbackContext):
@@ -67,12 +62,6 @@ async def append_buttons_news(update: Update, _: CallbackContext):
 
 
 def register_meme(app: Application):
-    filter_media = (filters.PHOTO | filters.VIDEO | filters.ANIMATION)
-
-    filter_meme = filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & ~filters.FORWARDED
-    app.add_handler(MessageHandler(filter_meme & filters.TEXT & ~filters.Regex(FOOTER_MEME), post_text_meme_nx))
-    app.add_handler(
-        MessageHandler(filter_meme & filter_media & ~filters.CaptionRegex(FOOTER_MEME), post_media_meme_nx))
     app.add_handler(
         MessageHandler(filters.UpdateType.CHANNEL_POST & filters.Chat(chat_id=NX_MEME) & filters.FORWARDED,
                        repost_forward))

@@ -14,7 +14,6 @@ from telegram.warnings import PTBUserWarning
 from bot.channel.loss_osint import get_osint_losses, setup_osint_crawl
 from bot.channel.loss_uamod import get_uamod_losses, setup_uamod_crawl
 from bot.channel.meme import register_meme
-from bot.channel.ukraine_russia import register_ua_ru
 from bot.data.db import get_destination_ids, get_accounts
 from bot.group.bingo import bingo_field, reset_bingo
 from bot.group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
@@ -81,7 +80,6 @@ def main():
     app.add_handler(CallbackQueryHandler(decline_request_ug, r"ugno_\d+_\d+"))
 
     register_meme(app)
-    register_ua_ru(app)
     register_advertisement(app)
     register_commands(app)
 

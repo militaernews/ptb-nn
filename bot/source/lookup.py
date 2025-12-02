@@ -2,8 +2,8 @@ from telegram import Update
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext
 
-from bot. data.db import get_source
-from bot. settings.config import GROUP_SOURCE
+from bot.data.db import get_source
+from bot.settings.config import GROUP_SOURCE
 
 
 async def lookup(update: Update, context: CallbackContext):
@@ -13,7 +13,8 @@ async def lookup(update: Update, context: CallbackContext):
     await update.message.reply_text(f"Quelle: {sender_chat.id} - {sender_chat.username}")
 
     if sender_chat.type != ChatType.CHANNEL:
-        return await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
+        await update.message.reply_text("Ich habe nur Kanäle gespeichert.")
+        return
 
     result = get_source(sender_chat.id)
 
@@ -21,9 +22,9 @@ async def lookup(update: Update, context: CallbackContext):
         await context.bot.send_message(GROUP_SOURCE,
                                        f"‼️ Neue Quelle\n\nchannel_id: <code>{sender_chat.id}</code>\n\nchannel_name: <code>{sender_chat.title}</code>\n\nusername: <code>{update.message.sender_chat.username}</code>")
         await update.message.forward(GROUP_SOURCE)
-        return await update.message.reply_text(
+        await update.message.reply_text(
             f"Tut mir leid. Eine Quelle mit der ID <code>{sender_chat.id}</code> ist nicht in meiner Datenbank hinterlegt.")
+        return
 
     await update.message.reply_text(
         f"Quelle mit der ID <code>{sender_chat.id}</code> gefunden!\n\n{result.username} {result.bias} {result.display_name}")
-

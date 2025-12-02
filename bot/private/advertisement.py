@@ -5,9 +5,9 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, PhotoSi
 from telegram.ext import CommandHandler, ConversationHandler, filters, MessageHandler, CallbackContext, ContextTypes, \
     Application
 
-from bot. settings.config import UG_CHANNEL,UG_ADMINS
-from bot. private.common import cancel_handler
-from bot. util.helper import get_text
+from bot.private.common import cancel_handler
+from bot.settings.config import UG_CHANNEL, UG_ADMINS
+from bot.util.helper import get_text
 
 ADVERTISEMENT_MEDIA: Final[str] = "new_ADVERTISEMENT_MEDIA"
 ADVERTISEMENT_TEXT: Final[str] = "new_ADVERTISEMENT_TEXT"
@@ -28,7 +28,7 @@ async def add_advertisement(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     context.chat_data[ADVERTISEMENT_BUTTON] = None
     context.chat_data[ADVERTISEMENT_URL] = None
 
-    await update.message.reply_text(get_text(update,"advertisement/intro"))
+    await update.message.reply_text(get_text(update, "advertisement/intro"))
     print(update, context.chat_data)
     return NEEDS_MEDIA
 
@@ -39,13 +39,13 @@ async def add_advertisement_media(update: Update, context: ContextTypes.DEFAULT_
 
     context.chat_data[ADVERTISEMENT_MEDIA] = update.message.effective_attachment
 
-    await update.message.reply_text(get_text(update,"advertisement/needs_media"))
+    await update.message.reply_text(get_text(update, "advertisement/needs_media"))
 
     return NEEDS_TEXT
 
 
 async def skip_media(update: Update, _: CallbackContext) -> int:
-    await update.message.reply_text(get_text(update,"advertisement/skip_media"))
+    await update.message.reply_text(get_text(update, "advertisement/skip_media"))
 
     return NEEDS_TEXT
 
@@ -53,7 +53,7 @@ async def skip_media(update: Update, _: CallbackContext) -> int:
 async def add_advertisement_text(update: Update, context: CallbackContext) -> int:
     context.chat_data[ADVERTISEMENT_TEXT] = update.message.text_html_urled
 
-    await update.message.reply_text( get_text(update,"advertisement/needs_text"))
+    await update.message.reply_text(get_text(update, "advertisement/needs_text"))
 
     return NEEDS_BUTTON
 
@@ -72,14 +72,14 @@ async def send_preview(update: Update, context: CallbackContext, button: InlineK
         else:
             await update.message.reply_text(text, reply_markup=button)
 
-        await update.message.reply_text(get_text(update,"advertisement/ready"))
+        await update.message.reply_text(get_text(update, "advertisement/ready"))
     except Exception as e:
         await update.message.reply_text("Error on sending you the preview! Restart with /cancel."
                                         f"\n\n<code>{e}</code>")
 
 
 async def skip_button(update: Update, context: CallbackContext) -> int:
-    await update.message.reply_text(get_text(update,"advertisement/skip_button"))
+    await update.message.reply_text(get_text(update, "advertisement/skip_button"))
     await send_preview(update, context)
 
     return SAVE_ADVERTISEMENT
@@ -88,7 +88,7 @@ async def skip_button(update: Update, context: CallbackContext) -> int:
 async def add_advertisement_button(update: Update, context: CallbackContext) -> int:
     context.chat_data[ADVERTISEMENT_BUTTON] = update.message.text
 
-    await update.message.reply_text(get_text(update,"advertisement/needs_button_text"))
+    await update.message.reply_text(get_text(update, "advertisement/needs_button_text"))
 
     return NEEDS_URL
 
@@ -125,7 +125,7 @@ async def save_advertisement(update: Update, context: CallbackContext) -> int:
     else:
         await context.bot.send_text(UG_CHANNEL, text, reply_markup=button)
 
-    await update.message.reply_text(get_text(update,"advertisement/done"))
+    await update.message.reply_text(get_text(update, "advertisement/done"))
 
     return ConversationHandler.END
 
