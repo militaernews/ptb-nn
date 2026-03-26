@@ -25,6 +25,7 @@ from bot.private.join_request import join_request_buttons, join_request_ug, acce
 from bot.private.pattern import add_pattern_handler
 from bot.private.setup import set_cmd
 from bot.settings.config import TELEGRAM, ADMINS, ADMIN_GROUP, CONTAINER, UG_LZ, ADMIN_GROUPS
+from bot.util.error_logger import get_error_logger
 from bot.source.add import add_source_handler, handle_join
 from bot.source.edit import edit_source_handler
 from bot.source.lookup import lookup
@@ -121,6 +122,16 @@ def main():
                                    respond_feedback))
 
     print("### Run Local ###")
+
+    # Error handler - logs to both console and Telegram group
+    async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+        logging.error("Exception while handling an update:", exc_info=context.error)
+        # Also log to Telegram group
+        error_logger = get_error_logger()
+        await error_logger.log_error(context.error, "Error in update handler")
+
+    app.add_error_handler(error_handler)
+
     app.run_polling(poll_interval=1)
 
 
