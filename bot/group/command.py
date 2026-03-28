@@ -141,6 +141,14 @@ async def cia(update: Update, context: CallbackContext):
 
 async def start(update: Update, context: CallbackContext):
     await reply_html(update, context, "start")
+    
+    # Add Web App button
+    await update.message.reply_text(
+        "Öffne die NewsMix Sources Web App direkt hier in Telegram:",
+        reply_markup=ReplyKeyboardMarkup([
+            [KeyboardButton("🚀 Web App öffnen", web_app=WebAppInfo("https://mix-sv.vercel.app"))]
+        ], resize_keyboard=True)
+    )
 
 
 async def unwarn_user(update: Update, context: CallbackContext):
