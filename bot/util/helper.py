@@ -8,7 +8,7 @@ from telegram.constants import ChatType
 from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
-from bot.settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP, RES_PATH
+from bot.settings.config import MSG_REMOVAL_PERIOD, LOG_GROUP, RES_PATH, THREAD_ID
 from bot.settings.constant import FOOTER
 
 CHAT_ID: Final[str] = "chat_id"
@@ -43,6 +43,7 @@ async def log_error(context: ContextTypes.DEFAULT_TYPE, update: Update, file_nam
         LOG_GROUP,
         f"<b>⚠️ Error when trying to read html-file {file_name}</b>\n<code>{e}</code>\n\n"
         f"<b>Caused by Update</b>\n<code>{update}</code>",
+        message_thread_id=THREAD_ID,
     )
 
 

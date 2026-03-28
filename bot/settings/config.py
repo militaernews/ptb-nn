@@ -14,7 +14,8 @@ NX_MEME = -1001482614635
 NX_MAIN = -1001839268196
 
 LOG_GROUP_ID = int(os.getenv('LOG_GROUP_ID', -1001338514957))
-THREAD_ID = int(os.getenv('THREAD_ID', 6))  # PTB-NN topic
+LOG_GROUP = LOG_GROUP_ID
+THREAD_ID = int(os.getenv('THREAD_ID', 478))  # PTB-NN topic
 ADMIN_GROUP = -1001723195485
 
 UG_ADMINS = json.loads(os.getenv('UG_ADMINS'))

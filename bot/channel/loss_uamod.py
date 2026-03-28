@@ -184,11 +184,22 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
     if key != now:
         logging.info("---- requesting ---- ")
 
-        res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily')
-        data = res.json()["data"]
-        #  print(data)
+        try:
+            res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily', timeout=30.0)
+            res.raise_for_status()
+            response_json = res.json()
+            if not response_json or "data" not in response_json:
+                logging.error(f"API response missing 'data' field: {res.text[:200]}")
+                return
+            data = response_json["data"]
+        except (httpx.HTTPError, ValueError) as e:
+            logging.error(f"Failed to fetch or parse API data: {repr(e)}")
+            return
 
         try:
+            if now not in data:
+                logging.warning(f"Entry for {now} not yet available in API data.")
+                return
             new_losses = data[now]
             if "submarines" in new_losses:
                 exist = new_losses["boats"] if "boats" in new_losses else 0

@@ -7,7 +7,7 @@ import traceback
 from typing import Optional
 from telegram import Bot
 from telegram.error import TelegramError
-from settings.config import LOG_GROUP_ID, THREAD_ID, TELEGRAM
+from bot.settings.config import LOG_GROUP_ID, THREAD_ID, TELEGRAM
 
 logger = logging.getLogger(__name__)
 
