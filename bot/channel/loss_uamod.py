@@ -2,7 +2,7 @@ import datetime
 import logging
 from itertools import islice
 from statistics import median
-from typing import Dict
+from typing import Dict, List, Optional
 
 import httpx
 from telegram import Update
@@ -10,6 +10,30 @@ from telegram.ext import ContextTypes
 
 from bot.settings.config import CHANNEL_UA_RU
 from bot.util.helper import export_svg
+
+# Daily Russian equipment/personnel losses compiled from official Ukrainian
+# Ministry of Defence reports (mod.gov.ua) - each entry's "sourceUri" links
+# straight to the day's mod.gov.ua announcement. Replaces
+# russian-casualties.in.ua, which started 403'ing every request from this
+# host (Cloudflare bot-challenge on our IP, not something fixable in code).
+DATA_SOURCE = 'https://raw.githubusercontent.com/lod-db/orc-losses/main/russian-losses.json'
+
+# Our category keys -> field names in the orc-losses JSON.
+FIELD_MAP = {
+    'personnel': 'personnel',
+    'tanks': 'tanks',
+    'apv': 'afvs',
+    'artillery': 'artillery',
+    'mlrs': 'rocketSystems',
+    'aaws': 'airDefense',
+    'aircraft': 'fixedWingAircraft',
+    'helicopters': 'rotaryWingAircraft',
+    'uav': 'uavs',
+    'vehicles': 'unarmoredVehicles',
+    'se': 'specialEquipment',
+    'missiles': 'missiles',
+}
+# 'boats' isn't in FIELD_MAP: it's ships+submarines summed, handled in _extract.
 
 LOSS_DESCRIPTIONS = {
     'tanks': "Panzer",
@@ -25,8 +49,6 @@ LOSS_DESCRIPTIONS = {
     'se': "Spezialausrüstung",
     'missiles': "Marschflugkörper",
     'personnel': "Personal (Tot/Verwundet)",
-    "presidents": "Präsidenten",
-    'ugv': "Bodendrohnen",
 }
 
 LOSS_STOCKPILE = {
@@ -46,7 +68,7 @@ LOSS_STOCKPILE = {
 
 
 def get_time() -> str:
-    return (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y.%m.%d")
+    return (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 def divide(number: int, by: int) -> float:
@@ -61,6 +83,13 @@ def chunks(data, size):
 
 def format_number(number: int):
     return f"{number:,}".replace(",", "║").replace(".", ",").replace("║", ".")
+
+
+def _extract(entry: dict) -> Dict[str, int]:
+    """Map one orc-losses day entry to our category keys."""
+    result = {cat: entry.get(field) or 0 for cat, field in FIELD_MAP.items()}
+    result['boats'] = (entry.get('ships') or 0) + (entry.get('submarines') or 0)
+    return result
 
 
 def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: str):
@@ -88,10 +117,10 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
        width='{all_width}'
        height='{all_height}'
        viewBox='0 0 {all_width} {all_height}'
-       version='1.1'      
+       version='1.1'
        xmlns='http://www.w3.org/2000/svg'
        xmlns:svg='http://www.w3.org/2000/svg'>
-       
+
 <defs>
    <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
 
@@ -101,14 +130,14 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
 
     </linearGradient>
 </defs>
-  
+
 <style>
     text {{
       font-family:Arial,sans-serif;
        fill:#ffffff;
      }}
 </style>
-  
+
 <rect width="100%" height="100%"   fill='{background_color}'/>
         <text
             x="50%"
@@ -143,13 +172,13 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
             style="font-size:58px;font-family:Impact;"
             fill="{loss_color}">{format_number(v)}<tspan """
 
-            if k != "presidents" and new_losses[k] != 0:
+            if new_losses[k] != 0:
                 svg += f"fill='{new_color}'> +{format_number(new_losses[k])}</tspan><tspan "
 
             svg += f"""dy="1.5em"
             text-anchor="start"
             fill="{description_color}"
-            x="{x * width_cell + (x + 2) * margin}"          
+            x="{x * width_cell + (x + 2) * margin}"
    style="font-size:42px;font-family:Arial;">{LOSS_DESCRIPTIONS[k]}</tspan>
         </text>"""
 
@@ -178,128 +207,73 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
     logging.info("get api")
     key = context.bot_data.get("last_loss", "")
     now = get_time()
-    logging.info("crawl: ", key, now)
 
     logging.info(f">>>> waiting... {datetime.datetime.now().strftime('%d.%m.%Y, %H:%M:%S')} :: {key} :: {now}")
 
-    if key != now:
-        logging.info("---- requesting ---- ")
+    if key == now:
+        return
 
-        try:
-            res = httpx.get('https://russian-casualties.in.ua/api/v1/data/json/daily', timeout=30.0)
-            res.raise_for_status()
-            response_json = res.json()
-            if not response_json or "data" not in response_json:
-                logging.error(f"API response missing 'data' field: {res.text[:200]}")
-                return
-            data = response_json["data"]
-        except (httpx.HTTPError, ValueError) as e:
-            logging.error(f"Failed to fetch or parse API data: {repr(e)}")
+    logging.info("---- requesting ---- ")
+
+    try:
+        res = httpx.get(DATA_SOURCE, timeout=30.0)
+        res.raise_for_status()
+        entries: List[dict] = res.json()
+        if not isinstance(entries, list) or not entries:
+            logging.error(f"Unexpected orc-losses response shape: {res.text[:200]}")
             return
+    except (httpx.HTTPError, ValueError) as e:
+        logging.error(f"Failed to fetch or parse orc-losses data: {repr(e)}")
+        return
 
-        try:
-            if now not in data:
-                logging.warning(f"Entry for {now} not yet available in API data.")
-                return
-            new_losses = data[now]
-            if "submarines" in new_losses:
-                exist = new_losses["boats"] if "boats" in new_losses else 0
-                new_losses["boats"] = new_losses["submarines"] + exist
-                new_losses.pop("submarines")
-        except KeyError as e:
-            logging.error(f"Could not get entry with key: {e}")
-            return
+    # Entries are newest-first; find today's and the one right before it.
+    today_index: Optional[int] = next((i for i, e in enumerate(entries) if e.get('date') == now), None)
+    if today_index is None:
+        logging.warning(f"Entry for {now} not yet available in orc-losses data.")
+        return
 
-        total_losses = {
-            'personnel': 0,
-            'tanks': 0,
-            'apv': 0,
-            'artillery': 0,
-            'mlrs': 0,
-            'aaws': 0,
-            'aircraft': 0,
-            'helicopters': 0,
-            'vehicles': 0,
-            'boats': 0,
-            'se': 0,
-            'uav': 0,
-            'ugv': 0,
-            'missiles': 0,
-            'presidents': 0
-        }
+    total_losses = _extract(entries[today_index])
+    prev_entry = entries[today_index + 1] if today_index + 1 < len(entries) else None
+    prev_totals = _extract(prev_entry) if prev_entry else {cat: 0 for cat in total_losses}
+    new_losses = {cat: total_losses[cat] - prev_totals[cat] for cat in total_losses}
 
-        median_losses = {
-            'personnel': [],
-            'tanks': [],
-            'apv': [],
-            'artillery': [],
-            'mlrs': [],
-            'aaws': [],
-            'aircraft': [],
-            'helicopters': [],
-            'vehicles': [],
-            'boats': [],
-            'se': [],
-            'uav': [],
-            'ugv': [],
-            'missiles': [],
-        }
+    # Day-over-day deltas across the whole history, for the "Median" stat.
+    median_losses: Dict[str, list] = {cat: [] for cat in total_losses}
+    for i in range(len(entries) - 1):
+        cur = _extract(entries[i])
+        prev = _extract(entries[i + 1])
+        for cat in total_losses:
+            median_losses[cat].append(cur[cat] - prev[cat])
 
-        for day, item in data.items():
-            #  print(day)
+    print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
-            for k, v in item.items():
-                #   print(k, v)
+    days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
+    display_date = (datetime.datetime.now()).strftime("%d.%m.%Y")
 
-                if k == "submarines":
-                    total_losses["boats"] = total_losses["boats"] + v
-                    median_losses["boats"].append(v)
-                    continue
+    create_svg(total_losses, new_losses, display_date)
 
-                if k == "captive":
-                    continue
+    text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
+    for k, v in total_losses.items():
+        if new_losses[k] != 0:
+            daily = round(v / days, 1)
+            text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k])) if median_losses[k] else 0}"
+            if k in LOSS_STOCKPILE:
+                storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
+                text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
 
-                if k not in total_losses:
-                    # The upstream API occasionally adds new categories (this is what broke
-                    # this crawler before, via the "ugv"/Bodendrohnen category). Skip anything we don't
-                    # know how to display instead of crashing the whole job.
-                    logging.warning(f"Unknown loss category '{k}' from API, ignoring")
-                    continue
+    last_id = context.bot_data.get("last_loss_id", 1)
 
-                total_losses[k] = total_losses[k] + v
+    text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
+            f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
+            f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
 
-                if k != "presidents":
-                    median_losses[k].append(v)
+    logging.info(text)
 
-        print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
+    with open("uamod_loss.png", "rb") as f:
+        msg = await context.bot.send_photo(CHANNEL_UA_RU, photo=f, caption=text)
 
-        days = (datetime.datetime.now().date() - datetime.date(2022, 2, 25)).days
-        display_date = (datetime.datetime.now()).strftime("%d.%m.%Y")
-
-        create_svg(total_losses, new_losses, display_date)
-
-        text = f"🔥 <b>Russische Verluste bis {display_date} (Tag {days})</b>"
-        for k, v in total_losses.items():
-            if k != "presidents" and new_losses[k] != 0:
-                daily = round(v / days, 1)
-                text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k]))}"
-                if k in LOSS_STOCKPILE:
-                    storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
-                    text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
-
-        last_id = context.bot_data.get("last_loss_id", 1)
-
-        text += f"\n\nMit /loss gibt es in den Kommentaren weitere Statistiken." \
-                f"\n\nℹ️ <a href='https://telegra.ph/russland-ukraine-statistik-methodik-quellen-02-18'>Datengrundlage und Methodik</a>" \
-                f"\n\n📊 <a href='https://t.me/Ukraine_Russland_Krieg_2022/{last_id}'>vorige Statistik</a>"
-
-        logging.info(text)
-
-        with open("uamod_loss.png", "rb") as f:
-            msg = await context.bot.send_photo(CHANNEL_UA_RU, photo=f, caption=text)
-
-        context.bot_data["last_loss"] = now
-        context.bot_data["last_loss_id"] = msg.id
+    context.bot_data["last_loss"] = now
+    context.bot_data["last_loss_id"] = msg.id
 
 
 async def setup_uamod_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
