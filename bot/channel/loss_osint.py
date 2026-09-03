@@ -4,7 +4,7 @@ import re
 from itertools import islice
 from typing import Dict
 
-from pandas import read_csv
+from pandas import read_csv, to_datetime
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -79,8 +79,8 @@ STOCKPILE_RU = {
 }
 
 
-def get_time(delta: int = 1) -> str:
-    return (datetime.datetime.now() - datetime.timedelta(days=delta)).strftime("%Y.%m.%d")
+def get_time(delta: int = 1) -> datetime.date:
+    return (datetime.datetime.now() - datetime.timedelta(days=delta)).date()
 
 
 def divide(number: int, by: int) -> float:
@@ -216,11 +216,17 @@ def loss_text(display_date: str, days: int, total_losses: dict, new_losses: dict
 from typing import Dict
 
 
-def extract_losses(now):
+def extract_losses(target_date: datetime.date) -> Dict[str, Dict[str, int]]:
     logging.info("---- requesting ---- ")
     df = read_csv(DATA_SOURCE)
-    res = df[df['Date'].str.contains(now)]
-    # print(res)
+    # The sheet's Date column format has changed over time (e.g. "2022.02.24" vs "2026-09-03"),
+    # so parse it properly instead of doing a substring match against a hand-formatted string.
+    df['Date'] = to_datetime(df['Date']).dt.date
+    res = df[df['Date'] == target_date]
+
+    if res.empty:
+        logging.warning(f"No OSINT loss data found for {target_date}")
+        return {}
 
     san = {"RU": {}, "UA": {}}
     for col, data in res.items():
@@ -269,6 +275,10 @@ async def get_osint_losses(context: ContextTypes.DEFAULT_TYPE):
     now = get_time()
 
     totals_today = extract_losses(now)
+
+    if not totals_today:
+        logging.warning(f"Skipping OSINT loss post: no data available for {now}")
+        return
 
     #  print(dumps(totals_today, ensure_ascii=False, sort_keys=True, indent=2, default=str))
 

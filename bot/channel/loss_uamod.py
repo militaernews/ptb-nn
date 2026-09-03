@@ -25,7 +25,8 @@ LOSS_DESCRIPTIONS = {
     'se': "Spezialausrüstung",
     'missiles': "Marschflugkörper",
     'personnel': "Personal (Tot/Verwundet)",
-    "presidents": "Präsidenten"
+    "presidents": "Präsidenten",
+    'ugv': "Bodendrohnen",
 }
 
 LOSS_STOCKPILE = {
@@ -222,6 +223,7 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
             'boats': 0,
             'se': 0,
             'uav': 0,
+            'ugv': 0,
             'missiles': 0,
             'presidents': 0
         }
@@ -239,6 +241,7 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
             'boats': [],
             'se': [],
             'uav': [],
+            'ugv': [],
             'missiles': [],
         }
 
@@ -253,11 +256,20 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
                     median_losses["boats"].append(v)
                     continue
 
-                if k != "captive":
-                    total_losses[k] = total_losses[k] + v
+                if k == "captive":
+                    continue
 
-                    if k != "presidents":
-                        median_losses[k].append(v)
+                if k not in total_losses:
+                    # The upstream API occasionally adds new categories (this is what broke
+                    # this crawler before, via the "ugv"/Bodendrohnen category). Skip anything we don't
+                    # know how to display instead of crashing the whole job.
+                    logging.warning(f"Unknown loss category '{k}' from API, ignoring")
+                    continue
+
+                total_losses[k] = total_losses[k] + v
+
+                if k != "presidents":
+                    median_losses[k].append(v)
 
         print("---- found ---- ", datetime.datetime.now().strftime("%d.%m.%Y, %H:%M:%S"))
 
