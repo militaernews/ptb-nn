@@ -11,6 +11,11 @@ TELEGRAM = os.getenv('TELEGRAM')
 DATABASE_URL = os.getenv('DATABASE_URL')
 ADMINS = json.loads(os.getenv('ADMINS'))
 
+# Base URL of the mix-sv frontend (Vercel deployment), used for the WebApp
+# "Edit in mix-sv" / "Create in mix-sv" buttons in source/edit.py and
+# source/add.py. Those buttons are hidden when this isn't set.
+MIX_SV_URL = os.getenv('MIX_SV_URL', '').rstrip('/')
+
 NX_MEME = -1001482614635
 NX_MAIN = -1001839268196
 

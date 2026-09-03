@@ -1,6 +1,7 @@
 import re
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, MessageOrigin, MessageOriginChannel
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, MessageOrigin, MessageOriginChannel, \
+    WebAppInfo
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, MessageHandler, CallbackQueryHandler, \
     filters
@@ -8,7 +9,7 @@ from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, M
 from bot.data.db import get_source, get_destinations, get_accounts, update_source
 from bot.data.model import Source, Account
 from bot.private.common import text_filter, cancel_handler
-from bot.settings.config import ADMINS
+from bot.settings.config import ADMINS, MIX_SV_URL
 
 SOURCE_INVITE = "edit_source_invite"
 SOURCE_USERNAME = "edit_source_username"
@@ -119,6 +120,18 @@ def change_keyboard(context: CallbackContext) -> InlineKeyboardMarkup:
         last_keyboard.append(InlineKeyboardButton(active_text, callback_data=SOURCE_ACTIVE))
 
     keyboard.append(last_keyboard)
+
+    # Shortcut to the full mix-sv editor (richer form, avatar upload) alongside
+    # this step-by-step flow. Hidden if mix-sv isn't deployed/configured yet.
+    if MIX_SV_URL:
+        keyboard.append([
+            InlineKeyboardButton(
+                "🖥 In mix-sv bearbeiten",
+                web_app=WebAppInfo(
+                    url=f"{MIX_SV_URL}/webapp?next=/channel/{context.chat_data[SOURCE_ID]}/edit"
+                )
+            )
+        ])
 
     return InlineKeyboardMarkup(keyboard)
 

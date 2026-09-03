@@ -52,30 +52,18 @@ LOSS_DESCRIPTIONS = {
     'presidents': "Präsidenten",
 }
 
-# "Lagerbestand" for the days-remaining estimate in the caption, as *current*
-# remaining-in-storage counts - not the original 2022 pre-war totals, which
-# would ignore that Russia keeps pulling refurbished/newly-built equipment
-# out of storage the whole time. Days-remaining = LOSS_STOCKPILE_REMAINING[k]
-# / current daily loss rate, no further subtraction (these are already net
-# of everything used so far). Source: OSINT researcher Jompy's
-# satellite-imagery storage-facility tracking, as of September 2026 - tanks
-# 1,543 (of 7,342 pre-war), apv = IFVs 1,122 + APCs 5,037 of 8,243 combined,
-# artillery 9,116 (of 23,602), mlrs 1,583 (of ~8,800). No comparably-sourced
-# current figure for the remaining equipment categories, so they're simply
-# left out of the days-remaining estimate rather than guessed.
-LOSS_STOCKPILE_REMAINING = {
-    'tanks': 1543,
-    'apv': 6159,
-    'artillery': 9116,
-    'mlrs': 1583,
-}
-
-# Categories where "days remaining" is instead original force size minus
-# cumulative losses so far, divided by the current daily rate - i.e. how
-# long until losses exceed the whole starting force. Personnel isn't a
-# storage pile that gets refilled the same way, so this baseline model still
-# fits.
-LOSS_STOCKPILE_BASELINE = {
+LOSS_STOCKPILE = {
+    'tanks': 8168,
+    'apv': 26993,
+    'artillery': 18007,
+    'mlrs': 4300,
+    'aaws': 3422,
+    'aircraft': 1551,
+    'helicopters': 1098,
+    'uav': 5028,
+    'vehicles': 98567,
+    'boats': 773,
+    'se': 1400,
     'personnel': 1500000,
 }
 
@@ -197,9 +185,8 @@ def create_svg(total_losses: Dict[str, int], new_losses: Dict[str, int], day: st
    style="font-size:42px;font-family:Arial;">{LOSS_DESCRIPTIONS[k]}</tspan>
         </text>"""
 
-            if k in LOSS_STOCKPILE_BASELINE and LOSS_STOCKPILE_BASELINE[k] != 0:
-                # % of the original force lost so far - only meaningful against a fixed baseline.
-                percentage = f"{v * 100 / LOSS_STOCKPILE_BASELINE[k]:.2f}".replace(".", ",")
+            if k in LOSS_STOCKPILE and LOSS_STOCKPILE[k] != 0:
+                percentage = f"{v * 100 / LOSS_STOCKPILE[k]:.2f}".replace(".", ",")
                 svg += f"""<text x="{(x + 1) * width_cell + x * margin}" y="{y * height_cell + (y + 2) * margin + heading_space}"
                  text-anchor="end" style="font-size:36px;font-family:Impact;" fill="#D3D3D3" dominant-baseline="text-top">{percentage}%</text>"""
 
@@ -273,10 +260,9 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
         if new_losses[k] != 0:
             daily = round(v / days, 1)
             text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k])) if median_losses[k] else 0}"
-            if k in LOSS_STOCKPILE_REMAINING and daily > 0:
-                text += f"\n• Lagerbestand noch {format_number(round(LOSS_STOCKPILE_REMAINING[k] / daily))} Tage"
-            elif k in LOSS_STOCKPILE_BASELINE and daily > 0:
-                text += f"\n• Uniformiert noch {format_number(round((LOSS_STOCKPILE_BASELINE[k] - v) / daily))} Tage"
+            if k in LOSS_STOCKPILE:
+                storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
+                text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
 
     last_id = context.bot_data.get("last_loss_id", 1)
 

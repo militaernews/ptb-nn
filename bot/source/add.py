@@ -1,14 +1,15 @@
 import logging
 import re
+from urllib.parse import quote, urlencode
 
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.constants import ChatType
 from telegram.ext import CallbackContext, ConversationHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
 from bot.data.db import get_source, set_source, get_free_account_id
 from bot.data.model import SourceInsert
 from bot.private.common import text_filter, cancel_handler
-from bot.settings.config import ADMINS
+from bot.settings.config import ADMINS, MIX_SV_URL
 
 SOURCE_INVITE = "new_source_invite"
 SOURCE_USERNAME = "new_source_username"
@@ -18,6 +19,27 @@ SOURCE_BIAS = "new_source_bias"
 SOURCE_ID = "new_source_id"
 
 ADD_SOURCE, NEEDS_INVITE, NEEDS_DISPLAY, NEEDS_BIAS, SAVE_SOURCE = range(5)
+
+
+def mix_sv_create_button(channel_id: int, channel_name: str, username: str | None) -> InlineKeyboardMarkup | None:
+    """Shortcut to mix-sv's create form, prefilled from the forwarded message.
+
+    None (no button shown) if mix-sv isn't deployed/configured yet.
+    """
+    if not MIX_SV_URL:
+        return None
+
+    params = {"channelId": str(channel_id), "channelName": channel_name}
+    if username:
+        params["username"] = username
+    next_path = f"/channel/new?{urlencode(params)}"
+
+    return InlineKeyboardMarkup([[
+        InlineKeyboardButton(
+            "🖥 In mix-sv anlegen",
+            web_app=WebAppInfo(url=f"{MIX_SV_URL}/webapp?next={quote(next_path, safe='')}")
+        )
+    ]])
 
 
 async def add_source(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -57,16 +79,18 @@ async def add_source_channel(update: Update, context: CallbackContext) -> int | 
     context.chat_data[SOURCE_USERNAME] = source_username = source.username
 
     text = f"Passt das so?\n\nID: {source.id}\n\nName: {source_name}"
+    webapp_button = mix_sv_create_button(source.id, source_name, source_username)
 
     if source_username is None:
-        text += "\n\nEs ist leider kein Nutzername (@beispielUsername) hinterlegt. Nutzer benötigen zum Beitreten dieses privaten Kanal einen Einladungslink. Bitte sende mir den Einladungslink im Format https://t.me/+123abcInvitehashblabla69"
-        await update.message.reply_text(text)
+        text += "\n\nEs ist leider kein Nutzername (@beispielUsername) hinterlegt. Nutzer benötigen zum Beitreten dieses privaten Kanal einen Einladungslink. Bitte sende mir den Einladungslink im Format https://t.me/+123abcInvitehashblabla69\n\nOder nutze den Button unten, um den Kanal direkt in mix-sv anzulegen."
+        await update.message.reply_text(text, reply_markup=webapp_button)
         return NEEDS_INVITE
 
     text += f"\n\nUsername: {source_username}\n\n" \
             f"Da manche Kanäle kyrillische, arabische oder auch sehr lange Namen haben, wäre es sinnvoll wenn du mir einen kürzeren für diesen Kanal vorschlägst.\n\n" \
-            f"Wenn der Name bereits recht prägnant, kurz und verständlich ist, dann tippe einfach /skip"
-    await update.message.reply_text(text)
+            f"Wenn der Name bereits recht prägnant, kurz und verständlich ist, dann tippe einfach /skip\n\n" \
+            f"Oder nutze den Button unten, um den Kanal direkt in mix-sv anzulegen."
+    await update.message.reply_text(text, reply_markup=webapp_button)
     return NEEDS_DISPLAY
 
 
