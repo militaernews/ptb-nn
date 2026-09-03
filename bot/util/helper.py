@@ -21,9 +21,9 @@ async def delete(context: ContextTypes.DEFAULT_TYPE):
 
 def get_text2(from_user: User, filename: str) -> str:
     code = from_user.language_code or "de"
-    path = f"res/strings/{code}/{filename}.html"
+    path = f"{RES_PATH}/strings/{code}/{filename}.html"
     if not os.path.exists(path):
-        path = f"res/strings/de/{filename}.html"
+        path = f"{RES_PATH}/strings/de/{filename}.html"
     return read_file(path)
 
 
@@ -77,7 +77,7 @@ async def reply_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, file_n
         except Exception as e:
             await log_error(context, update, file_name, e)
     try:
-        with open(f"res/img/{file_name}", "rb") as f:
+        with open(f"{RES_PATH}/img/{file_name}", "rb") as f:
             msg = await send_photo_based_on_reply(update, context, f, caption)
             context.job_queue.run_once(delete, MSG_REMOVAL_PERIOD, {CHAT_ID: msg.chat.id, MSG_ID: msg.message_id})
     except Exception as e:

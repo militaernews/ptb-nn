@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import Final
 
 from dotenv import load_dotenv
@@ -39,4 +40,11 @@ ADMIN_GROUPS = {
 }
 
 CONTAINER: Final[bool] = bool(os.getenv('CONTAINER', False), )
-RES_PATH: Final[str] = "./res"
+
+# Absolute path to bot/res, resolved from this file's location rather than a
+# "./res" relative path. The container runs "python -m bot.main" with
+# WorkingDir=/, so a relative path resolved to the nonexistent /res instead
+# of /bot/res - silently breaking every font/image/string lookup that goes
+# through RES_PATH (e.g. crawl_osint's chart lost its coat-of-arms images
+# and all text, since resvg had no fonts and no images to find).
+RES_PATH: Final[str] = str(Path(__file__).resolve().parent.parent / "res")

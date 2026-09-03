@@ -34,7 +34,7 @@ def create_inline_keyboard(button_text, button_url=None, callback_data=None):
 async def join_request_buttons(update: Update, context: CallbackContext):
     await context.bot.approve_chat_join_request(update.chat_join_request.chat.id, update.effective_user.id)
     await update.chat_join_request.from_user.send_photo(
-        open("res/img/nn_info.jpg", "rb"),
+        open(f"{config.RES_PATH}/img/nn_info.jpg", "rb"),
         caption=f"Herzlich Willkommen, {update.chat_join_request.from_user.name} ✌🏼\n\n{get_text2(update.chat_join_request.from_user, 'how')}",
         reply_markup=create_inline_keyboard("Kanal teilen ⏩",
                                             button_url=f"https://t.me/share/url?url=https://t.me/nyx_news&text={share_text}")
@@ -127,7 +127,7 @@ async def accept_request_ug(update: Update, context: CallbackContext):
     await context.bot.delete_message(int(user_id), int(msg_id))
     await context.bot.send_photo(
         int(user_id),
-        open("res/img/nn_info.jpg", "rb"),
+        open(f"{config.RES_PATH}/img/nn_info.jpg", "rb"),
         caption="Herzlich willkommen im Lagezentrum von @ukr_ger!\n\n🚨 Vielleicht gefällt dir auch <b>@newsmix_ukraine</b> — Aggregierte Nachrichten aus aller Welt mit Quellenangabe und gekennzeichneter Voreingenommenheit der Quelle.",
         reply_markup=create_inline_keyboard("Kanal beitreten ✅", button_url="https://t.me/newsmix_ukraine")
     )
