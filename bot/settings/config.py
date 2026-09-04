@@ -16,6 +16,11 @@ ADMINS = json.loads(os.getenv('ADMINS'))
 # source/add.py. Those buttons are hidden when this isn't set.
 MIX_SV_URL = os.getenv('MIX_SV_URL', '').rstrip('/')
 
+# mix-sv's own database (Neon) - a separate copy of sources/bloats that admins
+# edit through the mix-sv web UI. Used by source/sync_mixsv.py to pull those
+# edits into this bot's database. The /sync_mixsv command is hidden if unset.
+MIX_SV_DATABASE_URL = os.getenv('MIX_SV_DATABASE_URL', '')
+
 NX_MEME = -1001482614635
 NX_MAIN = -1001839268196
 

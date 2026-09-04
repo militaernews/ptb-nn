@@ -70,6 +70,40 @@ def get_source(channel_id: int) -> Optional[Source]:
     return res
 
 
+def get_all_sources() -> list:
+    res = execute_db_operation("select * from sources;", fetch="all")
+    return res or []
+
+
+def get_all_bloats() -> Dict[int, List[str]]:
+    res = execute_db_operation("select channel_id, pattern from bloats;", fetch="all")
+    result: Dict[int, List[str]] = {}
+    for row in (res or []):
+        result.setdefault(row.channel_id, []).append(row.pattern)
+    return result
+
+
+def update_source_fields(channel_id: int, fields: Dict[str, object]):
+    """Partially update a source. `fields` keys must come from a trusted
+    whitelist (e.g. mixsv_db.SYNC_FIELDS) - they're interpolated as column
+    names, not passed as query parameters.
+    """
+    if not fields:
+        return
+    assignments = ", ".join(f"{col} = %s" for col in fields)
+    params = tuple(fields.values()) + (channel_id,)
+    execute_db_operation(f"UPDATE sources SET {assignments} WHERE channel_id = %s;", params)
+
+
+def replace_bloats(channel_id: int, patterns: List[str]):
+    execute_db_operation("DELETE FROM bloats WHERE channel_id = %s;", (channel_id,))
+    for pattern in patterns:
+        execute_db_operation(
+            "INSERT INTO bloats(channel_id, pattern) VALUES (%s, %s) ON CONFLICT DO NOTHING;",
+            (channel_id, pattern)
+        )
+
+
 def get_destination_ids() -> List[int]:
     res = execute_db_operation("select channel_id from destinations;", fetch="all")
     if res is None:

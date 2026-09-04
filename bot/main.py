@@ -29,6 +29,7 @@ from bot.util.error_logger import get_error_logger
 from bot.source.add import add_source_handler, handle_join
 from bot.source.edit import edit_source_handler
 from bot.source.lookup import lookup
+from bot.source.sync_mixsv import sync_mixsv_handler, sync_mixsv_apply_handler, sync_mixsv_cancel_handler
 
 
 def add_logging():
@@ -89,6 +90,9 @@ def main():
     app.add_handler(add_source_handler)
     app.add_handler(edit_source_handler)
     app.add_handler(add_pattern_handler)
+    app.add_handler(sync_mixsv_handler)
+    app.add_handler(sync_mixsv_apply_handler)
+    app.add_handler(sync_mixsv_cancel_handler)
 
     for account in get_accounts().values():
         app.add_handler(CommandHandler("join", handle_join, filters.Chat(account.user_id), has_args=True))
