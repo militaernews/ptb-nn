@@ -67,6 +67,34 @@ LOSS_STOCKPILE = {
     'personnel': 1500000,
 }
 
+# Estimated annual new-build + refurbishment output being fed back into the
+# force, for netting against the daily loss rate in the "Lagerbestand"
+# days-remaining estimate - a plain (stockpile - losses) / daily-loss-rate
+# ignores that Russia keeps replacing losses out of current production.
+# 2025/2026 open-source estimates: tanks - up to 250 new T-90M + 150
+# refurbished T-80BVM/year (Defense Express); apv - ~400 new BMP-3 + ~500
+# new/refurbished BTR-82/year (Euromaidan Press); artillery - ~365 systems/
+# year, mostly refurbishment (Ukrainian military intelligence, via Defence
+# Blog); mlrs - ~12-13 units/month, ~80% refurbished, i.e. ~150/year
+# (Defense Express). No comparably-sourced production figure for the other
+# equipment categories, so they're left out rather than guessed.
+LOSS_PRODUCTION_ANNUAL = {
+    'tanks': 400,
+    'apv': 900,
+    'artillery': 365,
+    'mlrs': 150,
+}
+
+# Same idea as LOSS_PRODUCTION_ANNUAL but for personnel: contract-soldier
+# recruitment replenishing the force, netted against the daily casualty rate
+# before projecting how long the original 1,500,000-strong force in
+# LOSS_STOCKPILE lasts. ~1,090 recruits/day in mid-2026 per Ukraine's Foreign
+# Intelligence Service (SZRU), down from ~1,200/day in 2024 - i.e. roughly
+# 33,000/month.
+LOSS_RECRUITMENT_MONTHLY = {
+    'personnel': 33000,
+}
+
 
 def get_time() -> str:
     return (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -262,7 +290,13 @@ async def get_uamod_losses(context: ContextTypes.DEFAULT_TYPE):
             text += f"\n\n<b>{LOSS_DESCRIPTIONS[k]} +{format_number(new_losses[k])}</b>\n• {format_number(daily)} pro Tag, Median {int(median(median_losses[k])) if median_losses[k] else 0}"
             if k in LOSS_STOCKPILE:
                 storage = "Uniformiert" if k == "personnel" else "Lagerbestand"
-                text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / daily))} Tage"
+                # Net out estimated production/refurbishment (or, for personnel,
+                # recruitment) from the daily loss rate where we have a sourced
+                # figure for it - if replenishment keeps pace with losses, the
+                # stockpile isn't shrinking and no days-remaining figure is shown.
+                net_daily = daily - LOSS_PRODUCTION_ANNUAL.get(k, 0) / 365 - LOSS_RECRUITMENT_MONTHLY.get(k, 0) / 30
+                if net_daily > 0:
+                    text += f"\n• {storage} noch {format_number(round((LOSS_STOCKPILE[k] - v) / net_daily))} Tage"
 
     last_id = context.bot_data.get("last_loss_id", 1)
 
