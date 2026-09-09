@@ -18,6 +18,7 @@ from bot.data.db import get_destination_ids, get_accounts
 from bot.group.bingo import bingo_field, reset_bingo
 from bot.group.command import admin, inline_query, unwarn_user, warn_user, report_user, register_commands
 from bot.group.dictionary import handle_other_chats
+from bot.group.permissions import register_permissions
 from bot.private.advertisement import register_advertisement
 from bot.private.feedback import fwd, respond_feedback
 from bot.private.join_request import join_request_buttons, join_request_ug, accept_rules_ug, decline_request_ug, \
@@ -84,6 +85,7 @@ def main():
     register_meme(app)
     register_advertisement(app)
     register_commands(app)
+    register_permissions(app)
 
     app.add_handler(InlineQueryHandler(inline_query))
 
